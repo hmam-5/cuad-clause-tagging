@@ -1,0 +1,62 @@
+{
+  "dataset_contracts": 510,
+  "dataset_spans": 13823,
+  "offset_roundtrip_agreement": 1.0,
+  "full_run_count": 2,
+  "model_aggregates": [
+    {
+      "model": "word lookup | none",
+      "seeds": 1,
+      "token_macro_f1_mean": 0.008414998502659529,
+      "token_macro_f1_sd": 0.0,
+      "strict_span_micro_f1_mean": 0.0,
+      "partial_span_micro_f1_mean": 0.1694915254237288,
+      "training_minutes_mean": 0.023536593333362058,
+      "bootstrap_ci_per_run": [
+        [
+          0.006734406330952683,
+          0.009645447389722688
+        ]
+      ]
+    },
+    {
+      "model": "constant classifier | none",
+      "seeds": 1,
+      "token_macro_f1_mean": 0.0,
+      "token_macro_f1_sd": 0.0,
+      "strict_span_micro_f1_mean": 0.0,
+      "partial_span_micro_f1_mean": 0.0,
+      "training_minutes_mean": 1.3333313593951364e-08,
+      "bootstrap_ci_per_run": [
+        [
+          0.0,
+          0.0
+        ]
+      ]
+    }
+  ],
+  "top_model_group": "word lookup | none",
+  "best_validation_selected_run": "most-frequent-word-seed42",
+  "per_category_report": "per_category_f1.csv",
+  "loss_figure_runs": [],
+  "paired_comparisons": [
+    {
+      "first": "word lookup | none",
+      "second": "constant classifier | none",
+      "paired_difference": {
+        "mean_difference": 0.008204668978574173,
+        "lower": 0.006748307369351957,
+        "upper": 0.009740764516812462,
+        "two_sided_p": 0.001998001998001998,
+        "iterations": 1000.0,
+        "seed": 42.0
+      },
+      "selection_note": "Runs are selected using validation score; paired test comparison is descriptive and is not used for tuning."
+    }
+  ],
+  "caveats": [
+    "3 categories have fewer than five test spans.",
+    "Outside tokens account for 88.9% of priority-resolved tokens.",
+    "Runs with fewer than three seeds (and the 10-contract CRF smoke run) are exploratory; seed variance and robust model significance remain unestablished."
+  ]
+}

@@ -1,0 +1,9 @@
+\begin{tabular}{lllrrrrrr}
+\toprule
+Architecture & Checkpoint & Training contracts (scope) & Token macro F1 (95\% CI) & Strict span micro F1 & Strict span macro F1 & Partial span micro F1 & Train time (s) & Inference (ms/contract) \\
+\midrule
+linear-chain CRF & none & 10 (smoke) & 0.0000 (0.0000--0.0000) & 0.0000 & 0.0000 & 0.0000 & 165.4 & 345.7 \\
+word lookup & none & 408 (full) & 0.0084 (0.0067--0.0096) & 0.0000 & 0.0000 & 0.1695 & 1.4 & 1.1 \\
+constant classifier & none & 408 (full) & 0.0000 (0.0000--0.0000) & 0.0000 & 0.0000 & 0.0000 & 0.0 & 0.0 \\
+\bottomrule
+\end{tabular}

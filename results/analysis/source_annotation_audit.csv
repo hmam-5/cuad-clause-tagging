@@ -1,0 +1,8 @@
+﻿metric,count
+questions,20910
+answer_entries,13823
+valid_nonempty_spans,13823
+empty_answer_questions,14208
+missing_answer_lists,0
+empty_answer_entries,0
+nonempty_answers_missing_offsets,0

@@ -1,0 +1,84 @@
+﻿bio_label,token_count
+O,4546429
+B-Document Name,510
+I-Document Name,1351
+B-Parties,2227
+I-Parties,9612
+B-Agreement Date,212
+I-Agreement Date,838
+B-Effective Date,442
+I-Effective Date,5240
+B-Expiration Date,343
+I-Expiration Date,14013
+B-Renewal Term,94
+I-Renewal Term,6607
+B-Notice Period To Terminate Renewal,120
+I-Notice Period To Terminate Renewal,7145
+B-Governing Law,463
+I-Governing Law,16833
+B-Most Favored Nation,34
+I-Most Favored Nation,3079
+B-Non-Compete,199
+I-Non-Compete,15163
+B-Exclusivity,279
+I-Exclusivity,17871
+B-No-Solicit Of Customers,57
+I-No-Solicit Of Customers,3272
+B-Competitive Restriction Exception,114
+I-Competitive Restriction Exception,9886
+B-No-Solicit Of Employees,71
+I-No-Solicit Of Employees,6028
+B-Non-Disparagement,61
+I-Non-Disparagement,4674
+B-Termination For Convenience,220
+I-Termination For Convenience,9438
+B-Rofr/Rofo/Rofn,233
+I-Rofr/Rofo/Rofn,26524
+B-Change Of Control,210
+I-Change Of Control,17888
+B-Anti-Assignment,526
+I-Anti-Assignment,30467
+B-Revenue/Profit Sharing,372
+I-Revenue/Profit Sharing,29349
+B-Price Restrictions,24
+I-Price Restrictions,1845
+B-Minimum Commitment,347
+I-Minimum Commitment,28846
+B-Volume Restriction,150
+I-Volume Restriction,8979
+B-Ip Ownership Assignment,255
+I-Ip Ownership Assignment,22636
+B-Joint Ip Ownership,103
+I-Joint Ip Ownership,6995
+B-License Grant,298
+I-License Grant,23292
+B-Non-Transferable License,217
+I-Non-Transferable License,14960
+B-Affiliate License-Licensor,69
+I-Affiliate License-Licensor,8316
+B-Affiliate License-Licensee,82
+I-Affiliate License-Licensee,7719
+B-Unlimited/All-You-Can-Eat-License,30
+I-Unlimited/All-You-Can-Eat-License,2146
+B-Irrevocable Or Perpetual License,107
+I-Irrevocable Or Perpetual License,10911
+B-Source Code Escrow,53
+I-Source Code Escrow,5762
+B-Post-Termination Services,369
+I-Post-Termination Services,32547
+B-Audit Rights,488
+I-Audit Rights,35451
+B-Uncapped Liability,153
+I-Uncapped Liability,14643
+B-Cap On Liability,442
+I-Cap On Liability,33170
+B-Liquidated Damages,108
+I-Liquidated Damages,8176
+B-Warranty Duration,149
+I-Warranty Duration,9800
+B-Insurance,389
+I-Insurance,31624
+B-Covenant Not To Sue,162
+I-Covenant Not To Sue,12636
+B-Third Party Beneficiary,38
+I-Third Party Beneficiary,1657

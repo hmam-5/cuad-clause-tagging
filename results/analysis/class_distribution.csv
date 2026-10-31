@@ -1,0 +1,42 @@
+﻿category,positive_tokens,spans,train_spans,validation_spans,test_spans,span_count
+Document Name,1889,521,417,51,53,521
+Parties,11936,2554,1962,293,299,2554
+Agreement Date,2297,476,382,47,47,476
+Effective Date,5803,447,359,43,45,447
+Expiration Date,21154,467,372,45,50,467
+Renewal Term,12894,210,162,21,27,210
+Notice Period To Terminate Renewal,7265,122,95,11,16,122
+Governing Law,17296,464,370,47,47,464
+Most Favored Nation,3206,38,31,3,4,38
+Non-Compete,18660,259,219,24,16,259
+Exclusivity,27648,410,326,48,36,410
+No-Solicit Of Customers,3329,58,45,6,7,58
+Competitive Restriction Exception,10522,125,97,10,18,125
+No-Solicit Of Employees,6763,91,72,11,8,91
+Non-Disparagement,4892,65,49,7,9,65
+Termination For Convenience,10509,246,197,28,21,246
+Rofr/Rofo/Rofn,27873,367,276,39,52,367
+Change Of Control,18593,253,212,17,24,253
+Anti-Assignment,35237,654,523,63,68,654
+Revenue/Profit Sharing,29976,418,350,39,29,418
+Price Restrictions,1869,27,21,2,4,27
+Minimum Commitment,32027,424,331,36,57,424
+Volume Restriction,9191,171,130,21,20,171
+Ip Ownership Assignment,24291,318,263,33,22,318
+Joint Ip Ownership,7098,115,80,11,24,115
+License Grant,63640,777,589,97,91,777
+Non-Transferable License,23901,298,228,36,34,298
+Affiliate License-Licensor,8385,69,58,7,4,69
+Affiliate License-Licensee,12168,115,85,13,17,115
+Unlimited/All-You-Can-Eat-License,2176,32,19,6,7,32
+Irrevocable Or Perpetual License,17738,165,128,16,21,165
+Source Code Escrow,5815,66,47,11,8,66
+Post-Termination Services,37838,450,368,43,39,450
+Audit Rights,36502,643,527,50,66,643
+Uncapped Liability,14796,167,130,19,18,167
+Cap On Liability,47345,672,529,70,73,672
+Liquidated Damages,8561,121,94,19,8,121
+Warranty Duration,9949,176,135,20,21,176
+Insurance,32853,560,480,36,44,560
+Covenant Not To Sue,12977,173,137,21,15,173
+Third Party Beneficiary,1695,39,30,4,5,39

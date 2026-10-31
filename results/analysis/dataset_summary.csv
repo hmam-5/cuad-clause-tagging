@@ -1,0 +1,17 @@
+﻿metric,value
+contracts,510
+tokens,5114638
+outside_token_share,0.888905
+average_tokens_per_contract,10028.70
+average_windows_per_contract,26.03
+raw_spans,13823
+corrected_spans,0
+dropped_spans,0
+kept_spans,13823
+train_contracts,408
+validation_contracts,51
+test_contracts,51
+train_windows,10436
+validation_windows,1455
+test_windows,1383
+overlapping_category_pairs,1505

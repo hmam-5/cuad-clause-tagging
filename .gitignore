@@ -1,0 +1,23 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+
+# Generated, reproducible preprocessing output
+data/processed/*
+!data/processed/.gitkeep
+!data/processed/contracts.jsonl.xz
+!data/processed/stats.json
+!data/processed/span_corrections.csv
+
+# Model weights and local caches
+artifacts/
+checkpoints/
+*.pt
+*.pth
+*.bin
+*.safetensors
+*.cache
+
+# Keep result tables, figures, and reports under version control.

@@ -1,0 +1,42 @@
+﻿category,token_f1,precision,recall,test_token_support,test_spans,interpretation
+Affiliate License-Licensee,0.0,0.0,0.0,2126,17,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Affiliate License-Licensor,0.0,0.0,0.0,597,4,Only 4 gold test spans; per-category estimate is unstable.
+Agreement Date,0.0,0.0,0.0,107,47,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Change Of Control,0.0,0.0,0.0,1273,24,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Competitive Restriction Exception,0.0,0.0,0.0,1583,18,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Effective Date,0.0,0.0,0.0,579,45,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Exclusivity,0.0,0.0,0.0,1774,36,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Ip Ownership Assignment,0.0,0.0,0.0,2095,22,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Joint Ip Ownership,0.0,0.0,0.0,1634,24,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Liquidated Damages,0.0,0.0,0.0,307,8,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Minimum Commitment,0.0,0.0,0.0,7319,57,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Most Favored Nation,0.0,0.0,0.0,259,4,Only 4 gold test spans; per-category estimate is unstable.
+No-Solicit Of Customers,0.0,0.0,0.0,353,7,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+No-Solicit Of Employees,0.0,0.0,0.0,832,8,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Non-Compete,0.0,0.0,0.0,929,16,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Parties,0.0,0.0,0.0,1479,299,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Post-Termination Services,0.0,0.0,0.0,2471,39,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Price Restrictions,0.0,0.0,0.0,337,4,Only 4 gold test spans; per-category estimate is unstable.
+Renewal Term,0.0,0.0,0.0,627,27,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Source Code Escrow,0.0,0.0,0.0,548,8,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Termination For Convenience,0.0,0.0,0.0,906,21,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Third Party Beneficiary,0.0,0.0,0.0,342,5,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Uncapped Liability,0.0,0.0,0.0,1809,18,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Volume Restriction,0.0,0.0,0.0,1252,20,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Warranty Duration,0.0,0.0,0.0,1129,21,No correctly labeled test tokens; class imbalance and overlap are likely factors.
+Revenue/Profit Sharing,0.0005393743257820928,0.0028011204481792717,0.0002984183825723665,3351,29,Recall trails precision; the model misses some annotated tokens.
+License Grant,0.0016887137630171684,0.42857142857142855,0.0008460236886632825,3546,91,Recall trails precision; the model misses some annotated tokens.
+Expiration Date,0.002486016159105034,0.2857142857142857,0.0012484394506866417,1602,50,Recall trails precision; the model misses some annotated tokens.
+Audit Rights,0.007977207977207976,0.56,0.0040172166427546625,3485,66,Recall trails precision; the model misses some annotated tokens.
+Non-Disparagement,0.009732360097323601,0.4444444444444444,0.004920049200492005,813,9,Recall trails precision; the model misses some annotated tokens.
+Document Name,0.010471204188481674,1.0,0.005263157894736842,190,53,Recall trails precision; the model misses some annotated tokens.
+Non-Transferable License,0.01626898047722343,0.39473684210526316,0.008305647840531562,1806,34,Recall trails precision; the model misses some annotated tokens.
+Rofr/Rofo/Rofn,0.01920838183934808,1.0,0.00969732588892154,3403,52,Recall trails precision; the model misses some annotated tokens.
+Covenant Not To Sue,0.023584905660377357,0.7142857142857143,0.011990407673860911,1251,15,Recall trails precision; the model misses some annotated tokens.
+Notice Period To Terminate Renewal,0.024242424242424242,0.5714285714285714,0.01238390092879257,646,16,Recall trails precision; the model misses some annotated tokens.
+Unlimited/All-You-Can-Eat-License,0.02531645569620253,0.375,0.013100436681222707,229,7,Recall trails precision; the model misses some annotated tokens.
+Irrevocable Or Perpetual License,0.026446280991735537,0.26666666666666666,0.01391304347826087,1150,21,Recall trails precision; the model misses some annotated tokens.
+Cap On Liability,0.0336417157275021,0.44776119402985076,0.01747742499271774,3433,73,Recall trails precision; the model misses some annotated tokens.
+Anti-Assignment,0.03979125896934116,0.5304347826086957,0.020670958996950185,2951,68,Recall trails precision; the model misses some annotated tokens.
+Insurance,0.04291845493562231,0.5102040816326531,0.022401433691756272,2232,44,Recall trails precision; the model misses some annotated tokens.
+Governing Law,0.06070120355834641,0.5918367346938775,0.031991174848317705,1813,47,Recall trails precision; the model misses some annotated tokens.

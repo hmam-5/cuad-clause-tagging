@@ -1,0 +1,4 @@
+﻿run_id,model,architecture,checkpoint,seed,token_macro_f1,span_strict_micro_f1,span_strict_macro_f1,span_partial_micro_f1,span_partial_macro_f1,bootstrap_95_lower,bootstrap_95_upper,train_seconds,inference_ms_per_contract,bootstrap_iterations,training_contracts,test_contracts,training_scope,evaluation_scope,best_validation_macro_f1,loss_curve
+crf-seed42,crf,linear-chain CRF,none,42,0.0,0.0,0.0,0.0,0.0,0.0,0.0,165.4218944999957,345.71542352947006,200,10,51,smoke,full,,
+most-frequent-word-seed42,most-frequent-word,word lookup,none,42,0.008414998502659529,0.0,0.0,0.1694915254237288,0.11098299745927791,0.006734406330952683,0.009645447389722688,1.4121956000017235,1.0598901959989842,1000,408,51,full,full,,
+o-only-seed42,o-only,constant classifier,none,42,0.0,0.0,0.0,0.0,0.0,0.0,0.0,7.999988156370819e-07,0.015501960839245323,1000,408,51,full,full,,

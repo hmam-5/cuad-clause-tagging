@@ -1,0 +1,247 @@
+{
+  "seed": 42,
+  "contracts": 510,
+  "raw_spans": 13823,
+  "kept_spans": 13823,
+  "corrected_spans": 0,
+  "dropped_spans": 0,
+  "average_span_characters": 262.01888157418796,
+  "p95_span_characters": 758.0,
+  "average_span_tokens": 50.02409028430876,
+  "p95_span_tokens": 147.0,
+  "average_contract_tokens": 10028.701960784314,
+  "token_count": 5114638,
+  "o_token_share": 0.8889053340627431,
+  "tokens_with_multiple_categories": 90720,
+  "multi_category_token_share": 0.01773732569147611,
+  "overlapping_annotation_pairs": 2122,
+  "overlapping_annotation_characters": 836784,
+  "windows": 13274,
+  "window_size_words": 512,
+  "window_stride_words": 128,
+  "roundtrip_span_agreement": 1.0,
+  "cleaning_changes": {
+    "repeated_whitespace_collapsed": 1079439,
+    "format_characters_removed": 184
+  },
+  "split_contract_counts": {
+    "train": 408,
+    "test": 51,
+    "validation": 51
+  },
+  "per_category_spans": {
+    "Document Name": {
+      "train": 417,
+      "validation": 51,
+      "test": 53
+    },
+    "Parties": {
+      "train": 1962,
+      "validation": 293,
+      "test": 299
+    },
+    "Agreement Date": {
+      "train": 382,
+      "validation": 47,
+      "test": 47
+    },
+    "Effective Date": {
+      "train": 359,
+      "validation": 43,
+      "test": 45
+    },
+    "Expiration Date": {
+      "train": 372,
+      "validation": 45,
+      "test": 50
+    },
+    "Renewal Term": {
+      "train": 162,
+      "validation": 21,
+      "test": 27
+    },
+    "Notice Period To Terminate Renewal": {
+      "train": 95,
+      "validation": 11,
+      "test": 16
+    },
+    "Governing Law": {
+      "train": 370,
+      "validation": 47,
+      "test": 47
+    },
+    "Most Favored Nation": {
+      "train": 31,
+      "validation": 3,
+      "test": 4
+    },
+    "Non-Compete": {
+      "train": 219,
+      "validation": 24,
+      "test": 16
+    },
+    "Exclusivity": {
+      "train": 326,
+      "validation": 48,
+      "test": 36
+    },
+    "No-Solicit Of Customers": {
+      "train": 45,
+      "validation": 6,
+      "test": 7
+    },
+    "Competitive Restriction Exception": {
+      "train": 97,
+      "validation": 10,
+      "test": 18
+    },
+    "No-Solicit Of Employees": {
+      "train": 72,
+      "validation": 11,
+      "test": 8
+    },
+    "Non-Disparagement": {
+      "train": 49,
+      "validation": 7,
+      "test": 9
+    },
+    "Termination For Convenience": {
+      "train": 197,
+      "validation": 28,
+      "test": 21
+    },
+    "Rofr/Rofo/Rofn": {
+      "train": 276,
+      "validation": 39,
+      "test": 52
+    },
+    "Change Of Control": {
+      "train": 212,
+      "validation": 17,
+      "test": 24
+    },
+    "Anti-Assignment": {
+      "train": 523,
+      "validation": 63,
+      "test": 68
+    },
+    "Revenue/Profit Sharing": {
+      "train": 350,
+      "validation": 39,
+      "test": 29
+    },
+    "Price Restrictions": {
+      "train": 21,
+      "validation": 2,
+      "test": 4
+    },
+    "Minimum Commitment": {
+      "train": 331,
+      "validation": 36,
+      "test": 57
+    },
+    "Volume Restriction": {
+      "train": 130,
+      "validation": 21,
+      "test": 20
+    },
+    "Ip Ownership Assignment": {
+      "train": 263,
+      "validation": 33,
+      "test": 22
+    },
+    "Joint Ip Ownership": {
+      "train": 80,
+      "validation": 11,
+      "test": 24
+    },
+    "License Grant": {
+      "train": 589,
+      "validation": 97,
+      "test": 91
+    },
+    "Non-Transferable License": {
+      "train": 228,
+      "validation": 36,
+      "test": 34
+    },
+    "Affiliate License-Licensor": {
+      "train": 58,
+      "validation": 7,
+      "test": 4
+    },
+    "Affiliate License-Licensee": {
+      "train": 85,
+      "validation": 13,
+      "test": 17
+    },
+    "Unlimited/All-You-Can-Eat-License": {
+      "train": 19,
+      "validation": 6,
+      "test": 7
+    },
+    "Irrevocable Or Perpetual License": {
+      "train": 128,
+      "validation": 16,
+      "test": 21
+    },
+    "Source Code Escrow": {
+      "train": 47,
+      "validation": 11,
+      "test": 8
+    },
+    "Post-Termination Services": {
+      "train": 368,
+      "validation": 43,
+      "test": 39
+    },
+    "Audit Rights": {
+      "train": 527,
+      "validation": 50,
+      "test": 66
+    },
+    "Uncapped Liability": {
+      "train": 130,
+      "validation": 19,
+      "test": 18
+    },
+    "Cap On Liability": {
+      "train": 529,
+      "validation": 70,
+      "test": 73
+    },
+    "Liquidated Damages": {
+      "train": 94,
+      "validation": 19,
+      "test": 8
+    },
+    "Warranty Duration": {
+      "train": 135,
+      "validation": 20,
+      "test": 21
+    },
+    "Insurance": {
+      "train": 480,
+      "validation": 36,
+      "test": 44
+    },
+    "Covenant Not To Sue": {
+      "train": 137,
+      "validation": 21,
+      "test": 15
+    },
+    "Third Party Beneficiary": {
+      "train": 30,
+      "validation": 4,
+      "test": 5
+    }
+  },
+  "categories_below_minimum_test_spans": [
+    "Most Favored Nation",
+    "Price Restrictions",
+    "Affiliate License-Licensor"
+  ],
+  "minimum_test_spans": 5,
+  "source_file": "data/raw/CUADv1.json",
+  "correction_report": "data/processed/span_corrections.csv"
+}
