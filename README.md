@@ -43,6 +43,11 @@ release, preprocessing found:
 | Token-span round-trip agreement | 100% |
 | Invisible Unicode format characters removed | 184 |
 
+For a presentation-ready walkthrough of the task, complete pipeline, measured
+results, caveats, and likely questions, see
+[docs/PROJECT_REPORT.md](./docs/PROJECT_REPORT.md). It distinguishes
+implemented components from experiments that are still pending.
+
 Three categories have fewer than five test spans (`Most Favored Nation`,
 `Price Restrictions`, `Affiliate License-Licensor`); their test F1 will be
 uncertain. These are dataset/preprocessing counts, not model results. Run the

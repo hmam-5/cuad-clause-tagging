@@ -1,5 +1,7 @@
 # Documentation
 
+- [PROJECT_REPORT.md](./PROJECT_REPORT.md) is the presentation-ready project
+  and results dossier, including explicit completion status and limitations.
 - [preprocessing.md](./preprocessing.md) documents source offsets, cleaning,
   overlap handling, windows, splits, and generated outputs.
 - [experiments.md](./experiments.md) describes the baseline, neural, and
