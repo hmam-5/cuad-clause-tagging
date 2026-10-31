@@ -2,8 +2,29 @@
   "dataset_contracts": 510,
   "dataset_spans": 13823,
   "offset_roundtrip_agreement": 1.0,
-  "full_run_count": 2,
+  "full_run_count": 3,
   "model_aggregates": [
+    {
+      "model": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
+      "seeds": 1,
+      "token_macro_f1_mean": 0.3102763208052467,
+      "token_macro_f1_sd": 0.0,
+      "strict_span_micro_f1_mean": 0.10353535353535352,
+      "partial_span_micro_f1_mean": 0.3787878787878788,
+      "training_minutes_mean": 209.83165001499995,
+      "max_iterations": 100,
+      "optimizer_converged": false,
+      "regularization": {
+        "c1": 0.1,
+        "c2": 0.1
+      },
+      "bootstrap_ci_per_run": [
+        [
+          0.2615006799670341,
+          0.33333843158787907
+        ]
+      ]
+    },
     {
       "model": "word lookup | none",
       "seeds": 1,
@@ -12,6 +33,12 @@
       "strict_span_micro_f1_mean": 0.0,
       "partial_span_micro_f1_mean": 0.1694915254237288,
       "training_minutes_mean": 0.023536593333362058,
+      "max_iterations": null,
+      "optimizer_converged": null,
+      "regularization": {
+        "c1": null,
+        "c2": null
+      },
       "bootstrap_ci_per_run": [
         [
           0.006734406330952683,
@@ -27,6 +54,12 @@
       "strict_span_micro_f1_mean": 0.0,
       "partial_span_micro_f1_mean": 0.0,
       "training_minutes_mean": 1.3333313593951364e-08,
+      "max_iterations": null,
+      "optimizer_converged": null,
+      "regularization": {
+        "c1": null,
+        "c2": null
+      },
       "bootstrap_ci_per_run": [
         [
           0.0,
@@ -35,8 +68,43 @@
       ]
     }
   ],
-  "top_model_group": "word lookup | none",
-  "best_validation_selected_run": "most-frequent-word-seed42",
+  "full_data_run_metadata": [
+    {
+      "run_id": "crf-full-seed42-test",
+      "max_iterations": 100,
+      "iterations_completed": 100,
+      "iteration_cap_reached": true,
+      "optimizer_converged": false,
+      "c1": 0.1,
+      "c2": 0.1,
+      "train_seconds": 12589.899000899997,
+      "final_iteration_loss": 83911.274092,
+      "final_iteration_error_norm": 57558.324316,
+      "git_commit_hash": "not recorded"
+    }
+  ],
+  "validation_results": [
+    {
+      "run_id": "crf-full-seed42-validation",
+      "model": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
+      "token_macro_f1": 0.30576471998129917,
+      "bootstrap_95": [
+        0.2545203029381072,
+        0.33391165420598634
+      ],
+      "strict_span_micro_f1": 0.11244472520530639,
+      "strict_span_macro_f1": 0.06601361589916836,
+      "partial_span_micro_f1": 0.37018319646241316,
+      "partial_span_macro_f1": 0.3247193724713411
+    }
+  ],
+  "smoke_run_ids": [
+    "bert-base-cased-seed42",
+    "crf-seed42"
+  ],
+  "best_validation_selected_group": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
+  "best_validation_selected_run": "crf-full-seed42-validation",
+  "best_validation_selected_test_run": "crf-full-seed42-test",
   "per_category_report": "per_category_f1.csv",
   "loss_figure_runs": [],
   "paired_comparisons": [
@@ -51,12 +119,14 @@
         "iterations": 1000.0,
         "seed": 42.0
       },
-      "selection_note": "Runs are selected using validation score; paired test comparison is descriptive and is not used for tuning."
+      "source_file": "paired_comparison.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
     }
   ],
   "caveats": [
     "3 categories have fewer than five test spans.",
     "Outside tokens account for 88.9% of priority-resolved tokens.",
-    "Runs with fewer than three seeds (and the 10-contract CRF smoke run) are exploratory; seed variance and robust model significance remain unestablished."
+    "Runs with fewer than three seeds (and the 10-contract CRF smoke run) are exploratory; seed variance and robust model significance remain unestablished.",
+    "Test results are descriptive only; model selection is not performed from test scores."
   ]
 }

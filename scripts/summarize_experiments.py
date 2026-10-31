@@ -7,7 +7,6 @@ import json
 import math
 import statistics
 import sys
-from itertools import combinations
 from pathlib import Path
 from typing import Any
 
@@ -15,8 +14,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from compare_models import compare
-
+from cuad_tagging.baselines import _write_summary
 from cuad_tagging.config import PROCESSED_DATA, RESULTS
 
 
@@ -27,6 +25,162 @@ def _read_json(path: Path) -> dict[str, Any]:
 
 def _std(values: list[float]) -> float:
     return statistics.stdev(values) if len(values) > 1 else 0.0
+
+
+def _test_inference_ms_per_contract(artifacts_dir: Path, contract_count: int) -> float | str:
+    log_path = artifacts_dir / "test_evaluation.stdout.log"
+    if not log_path.is_file() or contract_count < 1:
+        return ""
+    elapsed_seconds = None
+    with log_path.open(encoding="utf-8") as source:
+        for line in source:
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if (
+                event.get("event") == "evaluation_contracts_completed"
+                and event.get("split") == "test"
+                and event.get("contracts_completed") == contract_count
+            ):
+                elapsed_seconds = float(event["elapsed_seconds"])
+    if elapsed_seconds is None:
+        return ""
+    return 1000 * elapsed_seconds / contract_count
+
+
+def _import_full_crf_results(results_dir: Path) -> list[dict[str, Any]]:
+    artifacts_dir = ROOT / "artifacts" / "crf_full_data"
+    metadata_path = artifacts_dir / "run_metadata.json"
+    if not metadata_path.is_file():
+        return []
+    metadata = _read_json(metadata_path)
+    if metadata.get("status") != "test_evaluation_complete":
+        return []
+
+    imported = []
+    for split in ("validation", "test"):
+        metrics_path = artifacts_dir / f"{split}_metrics.json"
+        if not metrics_path.is_file():
+            raise FileNotFoundError(f"Completed CRF run is missing {metrics_path}.")
+        metrics = _read_json(metrics_path)
+        contract_count = int(metrics["contracts"])
+        bootstrap = metrics["token_macro_f1_bootstrap_95"]
+        span = metrics["span"]
+        inference_ms = (
+            _test_inference_ms_per_contract(artifacts_dir, contract_count)
+            if split == "test"
+            else ""
+        )
+        run_id = f"crf-full-seed{metadata['seed']}-{split}"
+        record: dict[str, Any] = {
+            "run_id": run_id,
+            "model": "crf",
+            "architecture": "linear-chain CRF",
+            "checkpoint": Path(metadata["model_file"]).name,
+            "seed": metadata["seed"],
+            "evaluation_split": split,
+            "token_macro_f1": metrics["token_macro_f1"],
+            "span_strict_micro_f1": span["strict"]["micro_f1"],
+            "span_strict_macro_f1": span["strict"]["macro_f1"],
+            "span_partial_micro_f1": span["partial"]["micro_f1"],
+            "span_partial_macro_f1": span["partial"]["macro_f1"],
+            "bootstrap_95_lower": bootstrap["lower"],
+            "bootstrap_95_upper": bootstrap["upper"],
+            "bootstrap_iterations": bootstrap["iterations"],
+            "train_seconds": metadata["fit_seconds"],
+            "inference_ms_per_contract": inference_ms,
+            "training_contracts": metadata["train_contracts"],
+            "evaluation_contracts": contract_count,
+            "test_contracts": metadata["test_contracts"],
+            "training_scope": "full",
+            "evaluation_scope": "full",
+            "max_iterations": metadata["max_iterations"],
+            "optimizer_converged": metadata["optimizer_converged"],
+            "iteration_cap_reached": metadata["iteration_cap_reached"],
+            "c1": metadata["c1"],
+            "c2": metadata["c2"],
+            "git_commit_hash": metadata.get("git_commit_hash", "not recorded"),
+            "epochs": "",
+            "learning_rate": "",
+            "best_validation_macro_f1": (
+                metrics["token_macro_f1"] if split == "validation" else None
+            ),
+            "loss_curve": "",
+            "per_category": metrics["token_per_category"],
+            "predictions_path": metrics["predictions_file"] if split == "test" else "",
+            "final_iteration_loss": metadata["final_iteration_loss"],
+            "final_iteration_error_norm": metadata["final_iteration_error_norm"],
+        }
+        destination = results_dir / f"{run_id}.json"
+        destination.write_text(
+            json.dumps(record, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        imported.append(record)
+    return imported
+
+
+def _import_transformer_smoke(results_dir: Path) -> dict[str, Any] | None:
+    source = ROOT / "artifacts" / "smoke_minimal" / "bert-base-cased-seed42.json"
+    if not source.is_file():
+        return None
+    result = _read_json(source)
+    result["evaluation_split"] = "smoke"
+    destination = results_dir / "bert-base-cased-seed42.json"
+    destination.write_text(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return result
+
+
+def _saved_paired_comparisons(
+    results_dir: Path, runs: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    comparisons = []
+    for path in sorted(results_dir.glob("paired_comparison*.json")):
+        result = _read_json(path)
+        difference = result.get(
+            "paired_contract_bootstrap_macro_f1_difference_first_minus_second"
+        )
+        if not difference:
+            continue
+        first_path = Path(result["first_predictions"]).name
+        second_path = Path(result["second_predictions"]).name
+        first_run_id = first_path.removesuffix("_predictions.jsonl")
+        second_run_id = second_path.removesuffix("_predictions.jsonl")
+        first_run = next(
+            (
+                run
+                for run in runs
+                if run["run_id"] == first_run_id
+                or Path(run.get("predictions_path", "")).name == first_path
+            ),
+            None,
+        )
+        second_run = next(
+            (
+                run
+                for run in runs
+                if run["run_id"] == second_run_id
+                or Path(run.get("predictions_path", "")).name == second_path
+            ),
+            None,
+        )
+        comparisons.append(
+            {
+                "first": _run_group(first_run) if first_run else first_run_id,
+                "second": _run_group(second_run) if second_run else second_run_id,
+                "paired_difference": difference,
+                "source_file": path.name,
+                "selection_note": (
+                    "Descriptive paired test comparison only; not used for model "
+                    "selection or tuning."
+                ),
+            }
+        )
+    return comparisons
 
 
 def _run_group(run: dict[str, Any]) -> str:
@@ -150,6 +304,8 @@ def _write_loss_figure(results_dir: Path, runs: list[dict[str, Any]]) -> list[st
 
 def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
     stats = _read_json(PROCESSED_DATA / "stats.json")
+    _import_full_crf_results(results_dir)
+    _import_transformer_smoke(results_dir)
     runs = []
     for path in sorted(results_dir.glob("*-seed*.json")):
         run = _read_json(path)
@@ -159,8 +315,24 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
             run["training_scope"] = (
                 "smoke" if run["model"].lower() == "crf" else "full"
             )
+        run.setdefault(
+            "evaluation_split",
+            "smoke" if run.get("evaluation_scope") == "smoke" else "test",
+        )
         runs.append(run)
-    full_runs = [run for run in runs if run["training_scope"] == "full"]
+    _write_summary(results_dir, runs)
+    full_runs = [
+        run
+        for run in runs
+        if run["training_scope"] == "full" and run["evaluation_split"] == "test"
+    ]
+    validation_runs = [
+        run
+        for run in runs
+        if run["training_scope"] == "full"
+        and run["evaluation_split"] == "validation"
+    ]
+    smoke_runs = [run for run in runs if run["training_scope"] == "smoke"]
     groups: dict[str, list[dict[str, Any]]] = {}
     for run in full_runs:
         groups.setdefault(_run_group(run), []).append(run)
@@ -174,6 +346,12 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
             "strict_span_micro_f1_mean": statistics.mean(float(run["span_strict_micro_f1"]) for run in group),
             "partial_span_micro_f1_mean": statistics.mean(float(run["span_partial_micro_f1"]) for run in group),
             "training_minutes_mean": statistics.mean(float(run["train_seconds"]) for run in group) / 60,
+            "max_iterations": group[0].get("max_iterations"),
+            "optimizer_converged": group[0].get("optimizer_converged"),
+            "regularization": {
+                "c1": group[0].get("c1"),
+                "c2": group[0].get("c2"),
+            },
             "bootstrap_ci_per_run": [
                 [float(run["bootstrap_95_lower"]), float(run["bootstrap_95_upper"])]
                 for run in group
@@ -183,52 +361,82 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
     aggregates.sort(key=lambda row: row["token_macro_f1_mean"], reverse=True)
 
     best_group = None
-    best_run = None
-    if aggregates:
-        best_group = aggregates[0]["model"]
-        best_run = max(
-            groups[best_group],
-            key=lambda run: float(run.get("best_validation_macro_f1", run["token_macro_f1"])),
+    best_validation_run = None
+    best_test_run = None
+    validation_groups: dict[str, list[dict[str, Any]]] = {}
+    for run in validation_runs:
+        validation_groups.setdefault(_run_group(run), []).append(run)
+    if validation_groups:
+        best_group, selected_runs = max(
+            validation_groups.items(),
+            key=lambda item: max(
+                float(run["token_macro_f1"]) for run in item[1]
+            ),
         )
-    categories = _write_category_report(results_dir, best_run, stats)
+        best_validation_run = max(
+            selected_runs, key=lambda run: float(run["token_macro_f1"])
+        )
+        matching_test_runs = groups.get(best_group, [])
+        if matching_test_runs:
+            best_test_run = min(
+                matching_test_runs,
+                key=lambda run: abs(
+                    int(run["seed"]) - int(best_validation_run["seed"])
+                ),
+            )
+    categories = _write_category_report(results_dir, best_test_run, stats)
     loss_runs = _write_loss_figure(results_dir, full_runs)
 
-    significance = []
-    for first, second in combinations(aggregates[:2], 2):
-        first_run = max(
-            groups[first["model"]],
-            key=lambda run: float(run.get("best_validation_macro_f1", run["token_macro_f1"])),
-        )
-        second_run = max(
-            groups[second["model"]],
-            key=lambda run: float(run.get("best_validation_macro_f1", run["token_macro_f1"])),
-        )
-        first_predictions = results_dir / f"{first_run['run_id']}_predictions.jsonl"
-        second_predictions = results_dir / f"{second_run['run_id']}_predictions.jsonl"
-        if first_predictions.is_file() and second_predictions.is_file():
-            result = compare(first_predictions, second_predictions, iterations=1000)
-            significance.append(
-                {
-                    "first": first["model"],
-                    "second": second["model"],
-                    "paired_difference": result[
-                        "paired_contract_bootstrap_macro_f1_difference_first_minus_second"
-                    ],
-                    "selection_note": (
-                        "Runs are selected using validation score; paired test "
-                        "comparison is descriptive and is not used for tuning."
-                    ),
-                }
-            )
-
+    significance = _saved_paired_comparisons(results_dir, runs)
     report = {
         "dataset_contracts": stats["contracts"],
         "dataset_spans": stats["kept_spans"],
         "offset_roundtrip_agreement": stats["roundtrip_span_agreement"],
         "full_run_count": len(full_runs),
         "model_aggregates": aggregates,
-        "top_model_group": best_group,
-        "best_validation_selected_run": best_run["run_id"] if best_run else None,
+        "full_data_run_metadata": [
+            {
+                "run_id": run["run_id"],
+                "max_iterations": run.get("max_iterations"),
+                "iterations_completed": run.get("max_iterations"),
+                "iteration_cap_reached": run.get("iteration_cap_reached"),
+                "optimizer_converged": run.get("optimizer_converged"),
+                "c1": run.get("c1"),
+                "c2": run.get("c2"),
+                "train_seconds": run.get("train_seconds"),
+                "final_iteration_loss": run.get("final_iteration_loss"),
+                "final_iteration_error_norm": run.get(
+                    "final_iteration_error_norm"
+                ),
+                "git_commit_hash": run.get("git_commit_hash", "not recorded"),
+            }
+            for run in full_runs
+            if run["model"] == "crf"
+        ],
+        "validation_results": [
+            {
+                "run_id": run["run_id"],
+                "model": _run_group(run),
+                "token_macro_f1": run["token_macro_f1"],
+                "bootstrap_95": [
+                    run["bootstrap_95_lower"],
+                    run["bootstrap_95_upper"],
+                ],
+                "strict_span_micro_f1": run["span_strict_micro_f1"],
+                "strict_span_macro_f1": run["span_strict_macro_f1"],
+                "partial_span_micro_f1": run["span_partial_micro_f1"],
+                "partial_span_macro_f1": run["span_partial_macro_f1"],
+            }
+            for run in validation_runs
+        ],
+        "smoke_run_ids": [run["run_id"] for run in smoke_runs],
+        "best_validation_selected_group": best_group,
+        "best_validation_selected_run": (
+            best_validation_run["run_id"] if best_validation_run else None
+        ),
+        "best_validation_selected_test_run": (
+            best_test_run["run_id"] if best_test_run else None
+        ),
         "per_category_report": "per_category_f1.csv" if categories else None,
         "loss_figure_runs": loss_runs,
         "paired_comparisons": significance,
@@ -245,6 +453,10 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
                 "Runs with fewer than three seeds (and the 10-contract CRF smoke run) "
                 "are exploratory; seed variance and robust model significance remain unestablished."
             ),
+            (
+                "Test results are descriptive only; model selection is not performed "
+                "from test scores."
+            ),
         ],
     }
     with (results_dir / "experiment_summary.json").open("w", encoding="utf-8") as output:
@@ -258,14 +470,14 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
         f"- **{stats['contracts']:,} contracts** and **{stats['kept_spans']:,} validated spans**.",
         f"- **{stats['roundtrip_span_agreement']:.0%}** token-to-span round-trip agreement.",
         (
-            f"- Best full-data run so far: **{best_group}**, token macro F1 "
-            f"**{aggregates[0]['token_macro_f1_mean']:.4f}** "
-            f"(n={aggregates[0]['seeds']} seed(s))."
-            if aggregates
-            else "- No full-data model run is present; no performance conclusion is available."
+            f"- Highest validation-selected group: **{best_group}** "
+            f"(validation token macro F1 "
+            f"**{best_validation_run['token_macro_f1']:.4f}**)."
+            if best_validation_run
+            else "- No validation-scored full-data model run is present."
         ),
         "",
-        "## Full-data model results",
+        "## Full-data test results (descriptive; not used for selection)",
         "",
         "| Model | Seeds | Token macro F1 mean (SD) | Strict span micro F1 | Partial span micro F1 | Mean train minutes |",
         "|---|---:|---:|---:|---:|---:|",
@@ -279,6 +491,14 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
             f"{row['partial_span_micro_f1_mean']:.4f} | "
             f"{row['training_minutes_mean']:.2f} |"
         )
+    lines += ["", "## Validation results", ""]
+    lines += [
+        f"- **{run['model']}** ({run['run_id']}): token macro F1 "
+        f"{run['token_macro_f1']:.4f}; strict span micro F1 "
+        f"{run['strict_span_micro_f1']:.4f}; partial span micro F1 "
+        f"{run['partial_span_micro_f1']:.4f}."
+        for run in report["validation_results"]
+    ] or ["- No full-data validation metrics are present."]
     lines += ["", "## Top and bottom five categories"]
     if categories:
         ranked = sorted(categories, key=lambda row: row["token_f1"], reverse=True)

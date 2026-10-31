@@ -1,9 +1,12 @@
-\begin{tabular}{lllrrrrrr}
+\begin{tabular}{llllrrrrrrr}
 \toprule
-Architecture & Checkpoint & Training contracts (scope) & Token macro F1 (95\% CI) & Strict span micro F1 & Strict span macro F1 & Partial span micro F1 & Train time (s) & Inference (ms/contract) \\
+Architecture & Checkpoint & Training contracts (scope) & Split & Token macro F1 (95\% CI) & Strict span micro F1 & Strict span macro F1 & Partial span micro F1 & Train time (s) & Inference (ms/contract) & Iterations (converged) \\
 \midrule
-linear-chain CRF & none & 10 (smoke) & 0.0000 (0.0000--0.0000) & 0.0000 & 0.0000 & 0.0000 & 165.4 & 345.7 \\
-word lookup & none & 408 (full) & 0.0084 (0.0067--0.0096) & 0.0000 & 0.0000 & 0.1695 & 1.4 & 1.1 \\
-constant classifier & none & 408 (full) & 0.0000 (0.0000--0.0000) & 0.0000 & 0.0000 & 0.0000 & 0.0 & 0.0 \\
+BERT & bert-base-cased & 1/1 (smoke) & smoke & 0.0000 (0.0000--0.0000) & 0.0000 & 0.0000 & 0.0000 & 86.8 & 1856.6 &  (n/a) \\
+linear-chain CRF & crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite & 408/51 (full) & test & 0.3103 (0.2615--0.3333) & 0.1035 & 0.0638 & 0.3788 & 12589.9 & 417.6 & 100 (False) \\
+linear-chain CRF & crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite & 408/51 (full) & validation & 0.3058 (0.2545--0.3339) & 0.1124 & 0.0660 & 0.3702 & 12589.9 & 0.0 & 100 (False) \\
+linear-chain CRF & none & 10/51 (smoke) & test & 0.0000 (0.0000--0.0000) & 0.0000 & 0.0000 & 0.0000 & 165.4 & 345.7 &  (n/a) \\
+word lookup & none & 408/51 (full) & test & 0.0084 (0.0067--0.0096) & 0.0000 & 0.0000 & 0.1695 & 1.4 & 1.1 &  (n/a) \\
+constant classifier & none & 408/51 (full) & test & 0.0000 (0.0000--0.0000) & 0.0000 & 0.0000 & 0.0000 & 0.0 & 0.0 &  (n/a) \\
 \bottomrule
 \end{tabular}

@@ -206,6 +206,7 @@ def _write_summary(output_dir: Path, results: list[dict[str, Any]]) -> None:
         "architecture",
         "checkpoint",
         "seed",
+        "evaluation_split",
         "token_macro_f1",
         "span_strict_micro_f1",
         "span_strict_macro_f1",
@@ -217,12 +218,28 @@ def _write_summary(output_dir: Path, results: list[dict[str, Any]]) -> None:
         "inference_ms_per_contract",
         "bootstrap_iterations",
         "training_contracts",
+        "evaluation_contracts",
         "test_contracts",
         "training_scope",
         "evaluation_scope",
+        "max_iterations",
+        "iteration_cap_reached",
+        "optimizer_converged",
+        "c1",
+        "c2",
+        "final_iteration_loss",
+        "final_iteration_error_norm",
+        "git_commit_hash",
+        "epochs",
+        "learning_rate",
         "best_validation_macro_f1",
         "loss_curve",
     ]
+    for row in rows_by_id.values():
+        row.setdefault(
+            "evaluation_split",
+            "smoke" if row.get("evaluation_scope") == "smoke" else "test",
+        )
     ordered = [rows_by_id[key] for key in sorted(rows_by_id)]
     with path.open("w", encoding="utf-8-sig", newline="") as output:
         writer = csv.DictWriter(output, fieldnames=fields, extrasaction="ignore")
@@ -230,19 +247,25 @@ def _write_summary(output_dir: Path, results: list[dict[str, Any]]) -> None:
         writer.writerows(ordered)
     latex_path = output_dir / "metrics.tex"
     with latex_path.open("w", encoding="utf-8") as output:
-        output.write("\\begin{tabular}{lllrrrrrr}\n\\toprule\n")
+        output.write("\\begin{tabular}{llllrrrrrrr}\n\\toprule\n")
         output.write(
             "Architecture & Checkpoint & Training contracts (scope) "
+            "& Split "
             "& Token macro F1 (95\\% CI) "
             "& Strict span micro F1 & Strict span macro F1 "
-            "& Partial span micro F1 & Train time (s) & Inference (ms/contract) \\\\\n"
+            "& Partial span micro F1 & Train time (s) & Inference (ms/contract) "
+            "& Iterations (converged) \\\\\n"
         )
         output.write("\\midrule\n")
         for row in ordered:
+            converged = row.get("optimizer_converged")
+            convergence_text = "n/a" if converged is None else str(converged)
             output.write(
                 f"{row['architecture']} & {row['checkpoint']} "
-                f"& {row.get('training_contracts', '')} "
+                f"& {row.get('training_contracts', '')}/"
+                f"{row.get('evaluation_contracts', row.get('test_contracts', ''))} "
                 f"({row.get('training_scope', '')}) "
+                f"& {row.get('evaluation_split', '')} "
                 f"& {float(row['token_macro_f1']):.4f} "
                 f"({float(row['bootstrap_95_lower']):.4f}--"
                 f"{float(row['bootstrap_95_upper']):.4f}) "
@@ -250,7 +273,9 @@ def _write_summary(output_dir: Path, results: list[dict[str, Any]]) -> None:
                 f"& {float(row['span_strict_macro_f1']):.4f} "
                 f"& {float(row['span_partial_micro_f1']):.4f} "
                 f"& {float(row['train_seconds']):.1f} "
-                f"& {float(row['inference_ms_per_contract']):.1f} \\\\\n"
+                f"& {float(row['inference_ms_per_contract'] or 0):.1f} "
+                f"& {row.get('max_iterations', '')} "
+                f"({convergence_text}) \\\\\n"
             )
         output.write("\\bottomrule\n\\end{tabular}\n")
 
