@@ -1,42 +1,42 @@
 ﻿category,token_f1,precision,recall,test_token_support,test_spans,interpretation
 Price Restrictions,0.0,0.0,0.0,337,4,Only 4 gold test spans; per-category estimate is unstable.
-Affiliate License-Licensor,0.07887543928153065,0.05142566191446028,0.16917922948073702,597,4,Only 4 gold test spans; per-category estimate is unstable.
-Affiliate License-Licensee,0.1912087912087912,0.43211920529801323,0.12276575729068674,2126,17,Recall trails precision; the model misses some annotated tokens.
-Third Party Beneficiary,0.2628336755646817,0.4413793103448276,0.1871345029239766,342,5,Recall trails precision; the model misses some annotated tokens.
-Source Code Escrow,0.30389363722697055,0.31683168316831684,0.291970802919708,548,8,Recall trails precision; the model misses some annotated tokens.
-Volume Restriction,0.3063829787234042,0.2755102040816326,0.3450479233226837,1252,20,Test support and annotation boundary ambiguity affect this estimate.
-Competitive Restriction Exception,0.30695443645083936,0.4178454842219804,0.24257738471257106,1583,18,Recall trails precision; the model misses some annotated tokens.
-Unlimited/All-You-Can-Eat-License,0.3298350824587706,0.2511415525114155,0.48034934497816595,229,7,Test support and annotation boundary ambiguity affect this estimate.
-Minimum Commitment,0.338485680659082,0.39753040914117216,0.2947123924033338,7319,57,Recall trails precision; the model misses some annotated tokens.
-Most Favored Nation,0.3541147132169576,0.5,0.27413127413127414,259,4,Only 4 gold test spans; per-category estimate is unstable.
-Liquidated Damages,0.35868005738880926,0.32051282051282054,0.40716612377850164,307,8,Test support and annotation boundary ambiguity affect this estimate.
-Non-Compete,0.3601236476043277,0.2808921036769138,0.5016146393972013,929,16,Test support and annotation boundary ambiguity affect this estimate.
-Post-Termination Services,0.3615751789976134,0.35549472037543994,0.367867260218535,2471,39,Test support and annotation boundary ambiguity affect this estimate.
-Revenue/Profit Sharing,0.3872507243906596,0.45151033386327505,0.3390032826022083,3351,29,Recall trails precision; the model misses some annotated tokens.
-Agreement Date,0.4139784946236559,0.29056603773584905,0.719626168224299,107,47,Test support and annotation boundary ambiguity affect this estimate.
-Warranty Duration,0.41625207296849087,0.3912704598597038,0.4446412754650133,1129,21,Test support and annotation boundary ambiguity affect this estimate.
-Non-Disparagement,0.49159663865546216,0.5707317073170731,0.4317343173431734,813,9,Recall trails precision; the model misses some annotated tokens.
-Effective Date,0.5018115942028986,0.5276190476190477,0.4784110535405872,579,45,Recall trails precision; the model misses some annotated tokens.
-Joint Ip Ownership,0.5204117855875044,0.6196111580726965,0.4485924112607099,1634,24,Recall trails precision; the model misses some annotated tokens.
-License Grant,0.5308790641665233,0.6806352007057785,0.4351381838691483,3546,91,Recall trails precision; the model misses some annotated tokens.
-Document Name,0.5408000000000001,0.38850574712643676,0.8894736842105263,190,53,Test support and annotation boundary ambiguity affect this estimate.
-Ip Ownership Assignment,0.5508155583437891,0.49013770003721624,0.6286396181384248,2095,22,Test support and annotation boundary ambiguity affect this estimate.
-No-Solicit Of Customers,0.5515320334261838,0.5424657534246575,0.5609065155807366,353,7,Test support and annotation boundary ambiguity affect this estimate.
-Termination For Convenience,0.5775862068965517,0.6532033426183844,0.5176600441501104,906,21,Recall trails precision; the model misses some annotated tokens.
-Renewal Term,0.5978181818181818,0.5494652406417112,0.6555023923444976,627,27,Test support and annotation boundary ambiguity affect this estimate.
-Expiration Date,0.6057529610829103,0.6614929785661493,0.5586766541822722,1602,50,Recall trails precision; the model misses some annotated tokens.
-Non-Transferable License,0.6284857571214393,0.6854153041203401,0.5802879291251384,1806,34,Recall trails precision; the model misses some annotated tokens.
-Exclusivity,0.6290854572713642,0.6720051249199231,0.5913190529875987,1774,36,Recall trails precision; the model misses some annotated tokens.
-Change Of Control,0.6366130929047432,0.6353677621283255,0.6378633150039277,1273,24,Test support and annotation boundary ambiguity affect this estimate.
-Cap On Liability,0.6410737480155866,0.6352974828375286,0.6469560151471017,3433,73,Test support and annotation boundary ambiguity affect this estimate.
-Irrevocable Or Perpetual License,0.6578680203045685,0.7902439024390244,0.5634782608695652,1150,21,Recall trails precision; the model misses some annotated tokens.
-Uncapped Liability,0.661929488931402,0.6545945945945946,0.6694306246545052,1809,18,Test support and annotation boundary ambiguity affect this estimate.
-Parties,0.6839097744360901,0.6159263271939328,0.768762677484787,1479,299,Test support and annotation boundary ambiguity affect this estimate.
-Audit Rights,0.7041928452365688,0.636532220676866,0.787948350071736,3485,66,Test support and annotation boundary ambiguity affect this estimate.
-Notice Period To Terminate Renewal,0.7184801381692575,0.8125,0.6439628482972136,646,16,Recall trails precision; the model misses some annotated tokens.
-Anti-Assignment,0.7416920854069674,0.7046979865771812,0.7827854964418841,2951,68,Test support and annotation boundary ambiguity affect this estimate.
-No-Solicit Of Employees,0.7510548523206751,0.7533252720677146,0.7487980769230769,832,8,Recall trails precision; the model misses some annotated tokens.
-Rofr/Rofo/Rofn,0.7766497461928933,0.7893778452200303,0.7643255950631795,3403,52,Recall trails precision; the model misses some annotated tokens.
-Covenant Not To Sue,0.7907330041777441,0.7532561505065123,0.8321342925659473,1251,15,Test support and annotation boundary ambiguity affect this estimate.
-Insurance,0.8050726119860911,0.7406849830636055,0.8817204301075269,2232,44,Test support and annotation boundary ambiguity affect this estimate.
-Governing Law,0.9468848693654894,0.9874251497005988,0.909542195256481,1813,47,Recall trails precision; the model misses some annotated tokens.
+Affiliate License-Licensor,0.03464566929133859,0.02522935779816514,0.05527638190954774,597,4,Only 4 gold test spans; per-category estimate is unstable.
+Most Favored Nation,0.2636363636363636,0.32044198895027626,0.22393822393822393,259,4,Only 4 gold test spans; per-category estimate is unstable.
+Competitive Restriction Exception,0.26855123674911663,0.35477178423236516,0.2160454832596336,1583,18,Recall trails precision; the model misses some annotated tokens.
+Affiliate License-Licensee,0.28049671292914535,0.6274509803921569,0.18062088428974601,2126,17,Recall trails precision; the model misses some annotated tokens.
+Liquidated Damages,0.3117206982543641,0.25252525252525254,0.40716612377850164,307,8,Test support and annotation boundary ambiguity affect this estimate.
+Post-Termination Services,0.33627653578808936,0.3138148667601683,0.3622015378389316,2471,39,Test support and annotation boundary ambiguity affect this estimate.
+Third Party Beneficiary,0.336380255941499,0.44878048780487806,0.26900584795321636,342,5,Recall trails precision; the model misses some annotated tokens.
+Volume Restriction,0.33857100504002374,0.2692126355492692,0.4560702875399361,1252,20,Test support and annotation boundary ambiguity affect this estimate.
+Unlimited/All-You-Can-Eat-License,0.3536977491961415,0.27989821882951654,0.48034934497816595,229,7,Test support and annotation boundary ambiguity affect this estimate.
+Warranty Duration,0.36567926455566907,0.29701327433628316,0.47564216120460584,1129,21,Test support and annotation boundary ambiguity affect this estimate.
+Agreement Date,0.3686868686868687,0.25259515570934254,0.6822429906542056,107,47,Test support and annotation boundary ambiguity affect this estimate.
+Minimum Commitment,0.3762435040831478,0.41196553405950254,0.3462221614974723,7319,57,Recall trails precision; the model misses some annotated tokens.
+Revenue/Profit Sharing,0.3913189771197847,0.4485152333204782,0.3470605789316622,3351,29,Recall trails precision; the model misses some annotated tokens.
+No-Solicit Of Customers,0.4030335861321777,0.3263157894736842,0.5269121813031161,353,7,Test support and annotation boundary ambiguity affect this estimate.
+Joint Ip Ownership,0.4168514412416851,0.5261194029850746,0.34516523867809057,1634,24,Recall trails precision; the model misses some annotated tokens.
+Non-Compete,0.4419700214132762,0.3669985775248933,0.5554359526372443,929,16,Test support and annotation boundary ambiguity affect this estimate.
+Renewal Term,0.49096385542168675,0.46504992867332384,0.5199362041467305,627,27,Test support and annotation boundary ambiguity affect this estimate.
+Termination For Convenience,0.510460251046025,0.4850894632206759,0.5386313465783664,906,21,Test support and annotation boundary ambiguity affect this estimate.
+Effective Date,0.5113960113960114,0.4351515151515152,0.6200345423143351,579,45,Test support and annotation boundary ambiguity affect this estimate.
+Document Name,0.511904761904762,0.35684647302904565,0.9052631578947369,190,53,Test support and annotation boundary ambiguity affect this estimate.
+Source Code Escrow,0.5269286754002912,0.43825665859564167,0.6605839416058394,548,8,Test support and annotation boundary ambiguity affect this estimate.
+License Grant,0.5463685672708031,0.51457762272614,0.5823463056965595,3546,91,Test support and annotation boundary ambiguity affect this estimate.
+Exclusivity,0.5556756756756758,0.5337487019730011,0.5794813979706878,1774,36,Test support and annotation boundary ambiguity affect this estimate.
+Ip Ownership Assignment,0.5891642904145646,0.5450487012987013,0.6410501193317423,2095,22,Test support and annotation boundary ambiguity affect this estimate.
+Non-Disparagement,0.5964240102171137,0.6201859229747676,0.5744157441574416,813,9,Recall trails precision; the model misses some annotated tokens.
+Change Of Control,0.6261872455902306,0.551044776119403,0.7250589159465829,1273,24,Test support and annotation boundary ambiguity affect this estimate.
+Expiration Date,0.630952380952381,0.6708860759493671,0.5955056179775281,1602,50,Recall trails precision; the model misses some annotated tokens.
+Cap On Liability,0.6443180070736583,0.6824104234527687,0.6102534226623945,3433,73,Recall trails precision; the model misses some annotated tokens.
+Non-Transferable License,0.6465470364328438,0.6351495726495726,0.6583610188261351,1806,34,Test support and annotation boundary ambiguity affect this estimate.
+Parties,0.6614673599075679,0.5774079677256682,0.7741717376605814,1479,299,Test support and annotation boundary ambiguity affect this estimate.
+Irrevocable Or Perpetual License,0.6651825467497774,0.6815693430656934,0.6495652173913044,1150,21,Recall trails precision; the model misses some annotated tokens.
+Audit Rights,0.6830563250230841,0.5713458196563043,0.8490674318507891,3485,66,Test support and annotation boundary ambiguity affect this estimate.
+Notice Period To Terminate Renewal,0.6990291262135923,0.7322033898305085,0.6687306501547987,646,16,Recall trails precision; the model misses some annotated tokens.
+Uncapped Liability,0.7146429563767712,0.7184357541899441,0.710889994472084,1809,18,Recall trails precision; the model misses some annotated tokens.
+Rofr/Rofo/Rofn,0.7231974075074264,0.6689982513115164,0.7869526888039965,3403,52,Test support and annotation boundary ambiguity affect this estimate.
+Anti-Assignment,0.7342549923195085,0.671536948581062,0.8098949508641139,2951,68,Test support and annotation boundary ambiguity affect this estimate.
+No-Solicit Of Employees,0.7923033389926428,0.7486631016042781,0.8413461538461539,832,8,Test support and annotation boundary ambiguity affect this estimate.
+Insurance,0.7974353836906432,0.7212758245741211,0.8915770609318996,2232,44,Test support and annotation boundary ambiguity affect this estimate.
+Covenant Not To Sue,0.8810020876826722,0.9222027972027972,0.8433253397282174,1251,15,Recall trails precision; the model misses some annotated tokens.
+Governing Law,0.9566433566433566,0.9704880817253121,0.9431880860452289,1813,47,Recall trails precision; the model misses some annotated tokens.

@@ -2,16 +2,24 @@
   "dataset_contracts": 510,
   "dataset_spans": 13823,
   "offset_roundtrip_agreement": 1.0,
-  "full_run_count": 7,
+  "full_run_count": 8,
   "model_aggregates": [
     {
       "model": "RoBERTa | roberta-base",
       "seeds": 1,
-      "token_macro_f1_mean": 0.5202011207034875,
-      "token_macro_f1_sd": 0.0,
-      "strict_span_micro_f1_mean": 0.20180096975294387,
-      "partial_span_micro_f1_mean": 0.39852228122835376,
-      "training_minutes_mean": 65.56208921666669,
+      "per_seed_results": [
+        {
+          "seed": 42,
+          "token_macro_f1": 0.5202011207034875,
+          "strict_span_micro_f1": 0.20180096975294387,
+          "partial_span_micro_f1": 0.39852228122835376,
+          "training_minutes": 65.56208921666669,
+          "bootstrap_95": [
+            0.465104894311981,
+            0.5433059979277484
+          ]
+        }
+      ],
       "max_iterations": null,
       "optimizer_converged": null,
       "regularization": {
@@ -27,12 +35,31 @@
     },
     {
       "model": "BERT | nlpaueb/legal-bert-base-uncased",
-      "seeds": 1,
-      "token_macro_f1_mean": 0.5125164421167189,
-      "token_macro_f1_sd": 0.0,
-      "strict_span_micro_f1_mean": 0.2044172932330827,
-      "partial_span_micro_f1_mean": 0.40789473684210525,
-      "training_minutes_mean": 64.52816397666659,
+      "seeds": 2,
+      "per_seed_results": [
+        {
+          "seed": 42,
+          "token_macro_f1": 0.5125164421167189,
+          "strict_span_micro_f1": 0.2044172932330827,
+          "partial_span_micro_f1": 0.40789473684210525,
+          "training_minutes": 64.52816397666659,
+          "bootstrap_95": [
+            0.4546473332527965,
+            0.5386619794661573
+          ]
+        },
+        {
+          "seed": 43,
+          "token_macro_f1": 0.5117869643893117,
+          "strict_span_micro_f1": 0.20716956234880138,
+          "partial_span_micro_f1": 0.38926764899934024,
+          "training_minutes": 64.82398039833328,
+          "bootstrap_95": [
+            0.45973291194867266,
+            0.5358616515583863
+          ]
+        }
+      ],
       "max_iterations": null,
       "optimizer_converged": null,
       "regularization": {
@@ -43,17 +70,29 @@
         [
           0.4546473332527965,
           0.5386619794661573
+        ],
+        [
+          0.45973291194867266,
+          0.5358616515583863
         ]
       ]
     },
     {
       "model": "BERT | bert-base-cased",
       "seeds": 1,
-      "token_macro_f1_mean": 0.5076039447321373,
-      "token_macro_f1_sd": 0.0,
-      "strict_span_micro_f1_mean": 0.15169738118331716,
-      "partial_span_micro_f1_mean": 0.330552861299709,
-      "training_minutes_mean": 64.46245787166676,
+      "per_seed_results": [
+        {
+          "seed": 42,
+          "token_macro_f1": 0.5076039447321373,
+          "strict_span_micro_f1": 0.15169738118331716,
+          "partial_span_micro_f1": 0.330552861299709,
+          "training_minutes": 64.46245787166676,
+          "bootstrap_95": [
+            0.44894522527034525,
+            0.531418230146846
+          ]
+        }
+      ],
       "max_iterations": null,
       "optimizer_converged": null,
       "regularization": {
@@ -70,11 +109,19 @@
     {
       "model": "BERT | bert-base-uncased",
       "seeds": 1,
-      "token_macro_f1_mean": 0.48271084394255825,
-      "token_macro_f1_sd": 0.0,
-      "strict_span_micro_f1_mean": 0.15774871185097109,
-      "partial_span_micro_f1_mean": 0.33650416171224734,
-      "training_minutes_mean": 64.53946139833351,
+      "per_seed_results": [
+        {
+          "seed": 42,
+          "token_macro_f1": 0.48271084394255825,
+          "strict_span_micro_f1": 0.15774871185097109,
+          "partial_span_micro_f1": 0.33650416171224734,
+          "training_minutes": 64.53946139833351,
+          "bootstrap_95": [
+            0.42874617269603227,
+            0.5073036564732148
+          ]
+        }
+      ],
       "max_iterations": null,
       "optimizer_converged": null,
       "regularization": {
@@ -91,11 +138,19 @@
     {
       "model": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
       "seeds": 1,
-      "token_macro_f1_mean": 0.3102763208052467,
-      "token_macro_f1_sd": 0.0,
-      "strict_span_micro_f1_mean": 0.10353535353535352,
-      "partial_span_micro_f1_mean": 0.3787878787878788,
-      "training_minutes_mean": 209.83165001499995,
+      "per_seed_results": [
+        {
+          "seed": 42,
+          "token_macro_f1": 0.3102763208052467,
+          "strict_span_micro_f1": 0.10353535353535352,
+          "partial_span_micro_f1": 0.3787878787878788,
+          "training_minutes": 209.83165001499995,
+          "bootstrap_95": [
+            0.2615006799670341,
+            0.33333843158787907
+          ]
+        }
+      ],
       "max_iterations": 100,
       "optimizer_converged": false,
       "regularization": {
@@ -112,11 +167,19 @@
     {
       "model": "word lookup | none",
       "seeds": 1,
-      "token_macro_f1_mean": 0.008414998502659529,
-      "token_macro_f1_sd": 0.0,
-      "strict_span_micro_f1_mean": 0.0,
-      "partial_span_micro_f1_mean": 0.1694915254237288,
-      "training_minutes_mean": 0.023536593333362058,
+      "per_seed_results": [
+        {
+          "seed": 42,
+          "token_macro_f1": 0.008414998502659529,
+          "strict_span_micro_f1": 0.0,
+          "partial_span_micro_f1": 0.1694915254237288,
+          "training_minutes": 0.023536593333362058,
+          "bootstrap_95": [
+            0.006734406330952683,
+            0.009645447389722688
+          ]
+        }
+      ],
       "max_iterations": null,
       "optimizer_converged": null,
       "regularization": {
@@ -133,11 +196,19 @@
     {
       "model": "constant classifier | none",
       "seeds": 1,
-      "token_macro_f1_mean": 0.0,
-      "token_macro_f1_sd": 0.0,
-      "strict_span_micro_f1_mean": 0.0,
-      "partial_span_micro_f1_mean": 0.0,
-      "training_minutes_mean": 1.3333313593951364e-08,
+      "per_seed_results": [
+        {
+          "seed": 42,
+          "token_macro_f1": 0.0,
+          "strict_span_micro_f1": 0.0,
+          "partial_span_micro_f1": 0.0,
+          "training_minutes": 1.3333313593951364e-08,
+          "bootstrap_95": [
+            0.0,
+            0.0
+          ]
+        }
+      ],
       "max_iterations": null,
       "optimizer_converged": null,
       "regularization": {
@@ -221,6 +292,19 @@
       "partial_span_macro_f1": 0.3947597278777498
     },
     {
+      "run_id": "nlpaueb_legal-bert-base-uncased-full-seed43-validation",
+      "model": "BERT | nlpaueb/legal-bert-base-uncased",
+      "token_macro_f1": 0.5631469204896168,
+      "bootstrap_95": [
+        0.5030925181740967,
+        0.5872985708491777
+      ],
+      "strict_span_micro_f1": 0.22007366482504603,
+      "strict_span_macro_f1": 0.17824640093466337,
+      "partial_span_micro_f1": 0.4116022099447514,
+      "partial_span_macro_f1": 0.40969598835293564
+    },
+    {
       "run_id": "roberta-base-full-seed42-validation",
       "model": "RoBERTa | roberta-base",
       "token_macro_f1": 0.5222842019061927,
@@ -239,8 +323,8 @@
     "crf-seed42"
   ],
   "best_validation_selected_group": "BERT | nlpaueb/legal-bert-base-uncased",
-  "best_validation_selected_run": "nlpaueb_legal-bert-base-uncased-full-seed42-validation",
-  "best_validation_selected_test_run": "nlpaueb_legal-bert-base-uncased-full-seed42",
+  "best_validation_selected_run": "nlpaueb_legal-bert-base-uncased-full-seed43-validation",
+  "best_validation_selected_test_run": "nlpaueb_legal-bert-base-uncased-full-seed43",
   "per_category_report": "per_category_f1.csv",
   "crf_category_analysis": "analysis/crf_full_data_per_category.csv",
   "crf_category_correlations": {
@@ -251,6 +335,7 @@
     "bert-base-cased-full-seed42",
     "bert-base-uncased-full-seed42",
     "nlpaueb_legal-bert-base-uncased-full-seed42",
+    "nlpaueb_legal-bert-base-uncased-full-seed43",
     "roberta-base-full-seed42"
   ],
   "paired_comparisons": [
@@ -322,6 +407,20 @@
         "seed": 42.0
       },
       "source_file": "paired_comparison_crf_vs_word_lookup.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
+      "first": "BERT | nlpaueb/legal-bert-base-uncased",
+      "second": "BERT | nlpaueb/legal-bert-base-uncased",
+      "paired_difference": {
+        "mean_difference": -0.0018326542947307049,
+        "lower": -0.018520226010767415,
+        "upper": 0.014168160346963832,
+        "two_sided_p": 0.8105947026486756,
+        "iterations": 2000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_legalbert_seed42_vs_seed43.json",
       "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
     },
     {

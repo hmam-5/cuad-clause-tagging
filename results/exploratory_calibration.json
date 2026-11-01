@@ -1,0 +1,52 @@
+{
+  "model": "nlpaueb/legal-bert-base-uncased",
+  "seed": 42,
+  "checkpoint": "validation-selected",
+  "test_used_for_selection": false,
+  "results": [
+    {
+      "method": "single non-O logit penalty",
+      "selected_on": "validation",
+      "selected_penalty": -0.5,
+      "validation": {
+        "baseline_token_macro_f1": 0.5387444978038599,
+        "calibrated_token_macro_f1": 0.5397314091833673,
+        "baseline_strict_span_micro_f1": 0.20931349015842535,
+        "calibrated_strict_span_micro_f1": 0.19814651368049427,
+        "baseline_partial_span_micro_f1": 0.41958713394143066,
+        "calibrated_partial_span_micro_f1": 0.3936451897616946
+      },
+      "test_descriptive_only": {
+        "baseline_token_macro_f1": 0.5125164421167189,
+        "calibrated_token_macro_f1": 0.5133001777857,
+        "baseline_strict_span_micro_f1": 0.2044172932330827,
+        "calibrated_strict_span_micro_f1": 0.195438282647585,
+        "baseline_partial_span_micro_f1": 0.40789473684210525,
+        "calibrated_partial_span_micro_f1": 0.39132379248658317
+      },
+      "limitation": "Single split and one seed; validation-grid selection can overfit."
+    },
+    {
+      "method": "per-category logit biases",
+      "selected_on": "validation",
+      "fitted_bias_count": 41,
+      "validation": {
+        "baseline_token_macro_f1": 0.5387444978038599,
+        "calibrated_token_macro_f1": 0.5671142035102574,
+        "baseline_strict_span_micro_f1": 0.20931349015842535,
+        "calibrated_strict_span_micro_f1": 0.21253012048192768,
+        "baseline_partial_span_micro_f1": 0.41958713394143066,
+        "calibrated_partial_span_micro_f1": 0.4110843373493976
+      },
+      "test_descriptive_only": {
+        "baseline_token_macro_f1": 0.5125164421167189,
+        "calibrated_token_macro_f1": 0.5097777061024763,
+        "baseline_strict_span_micro_f1": 0.2044172932330827,
+        "calibrated_strict_span_micro_f1": 0.20590951061865193,
+        "baseline_partial_span_micro_f1": 0.40789473684210525,
+        "calibrated_partial_span_micro_f1": 0.39150507848568794
+      },
+      "limitation": "Single validation split; 41 fitted parameters can overfit."
+    }
+  ]
+}

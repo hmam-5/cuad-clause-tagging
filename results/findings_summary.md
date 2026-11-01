@@ -3,19 +3,20 @@
 ## Three key numbers
 - **510 contracts** and **13,823 validated spans**.
 - **100%** token-to-span round-trip agreement.
-- Highest validation-selected group: **BERT | nlpaueb/legal-bert-base-uncased** (validation token macro F1 **0.5387**).
+- Highest validation-selected group: **BERT | nlpaueb/legal-bert-base-uncased** (validation token macro F1 **0.5631**).
 
 ## Full-data test results (descriptive; not used for selection)
 
-| Model | Seeds | Token macro F1 mean (SD) | Strict span micro F1 | Partial span micro F1 | Mean train minutes |
+| Model | Seed | Token macro F1 (contract-bootstrap 95% CI) | Strict span micro F1 | Partial span micro F1 | Train minutes |
 |---|---:|---:|---:|---:|---:|
-| RoBERTa \| roberta-base | 1 | 0.5202 (0.0000) | 0.2018 | 0.3985 | 65.56 |
-| BERT \| nlpaueb/legal-bert-base-uncased | 1 | 0.5125 (0.0000) | 0.2044 | 0.4079 | 64.53 |
-| BERT \| bert-base-cased | 1 | 0.5076 (0.0000) | 0.1517 | 0.3306 | 64.46 |
-| BERT \| bert-base-uncased | 1 | 0.4827 (0.0000) | 0.1577 | 0.3365 | 64.54 |
-| linear-chain CRF \| crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite | 1 | 0.3103 (0.0000) | 0.1035 | 0.3788 | 209.83 |
-| word lookup \| none | 1 | 0.0084 (0.0000) | 0.0000 | 0.1695 | 0.02 |
-| constant classifier \| none | 1 | 0.0000 (0.0000) | 0.0000 | 0.0000 | 0.00 |
+| RoBERTa \| roberta-base | 42 | 0.5202 (0.4651–0.5433) | 0.2018 | 0.3985 | 65.56 |
+| BERT \| nlpaueb/legal-bert-base-uncased | 42 | 0.5125 (0.4546–0.5387) | 0.2044 | 0.4079 | 64.53 |
+|  | 43 | 0.5118 (0.4597–0.5359) | 0.2072 | 0.3893 | 64.82 |
+| BERT \| bert-base-cased | 42 | 0.5076 (0.4489–0.5314) | 0.1517 | 0.3306 | 64.46 |
+| BERT \| bert-base-uncased | 42 | 0.4827 (0.4287–0.5073) | 0.1577 | 0.3365 | 64.54 |
+| linear-chain CRF \| crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite | 42 | 0.3103 (0.2615–0.3333) | 0.1035 | 0.3788 | 209.83 |
+| word lookup \| none | 42 | 0.0084 (0.0067–0.0096) | 0.0000 | 0.1695 | 0.02 |
+| constant classifier \| none | 42 | 0.0000 (0.0000–0.0000) | 0.0000 | 0.0000 | 0.00 |
 
 ## Validation results
 
@@ -23,24 +24,25 @@
 - **BERT | bert-base-uncased** (bert-base-uncased-full-seed42-validation): token macro F1 0.5120; strict span micro F1 0.1630; partial span micro F1 0.3351.
 - **linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite** (crf-full-seed42-validation): token macro F1 0.3058; strict span micro F1 0.1124; partial span micro F1 0.3702.
 - **BERT | nlpaueb/legal-bert-base-uncased** (nlpaueb_legal-bert-base-uncased-full-seed42-validation): token macro F1 0.5387; strict span micro F1 0.2093; partial span micro F1 0.4196.
+- **BERT | nlpaueb/legal-bert-base-uncased** (nlpaueb_legal-bert-base-uncased-full-seed43-validation): token macro F1 0.5631; strict span micro F1 0.2201; partial span micro F1 0.4116.
 - **RoBERTa | roberta-base** (roberta-base-full-seed42-validation): token macro F1 0.5223; strict span micro F1 0.2073; partial span micro F1 0.4036.
 
 ## Top and bottom five categories
 
 ### Highest F1
 
-- **Governing Law** — F1 0.947; 47 gold test spans; Recall trails precision; the model misses some annotated tokens.
-- **Insurance** — F1 0.805; 44 gold test spans; Test support and annotation boundary ambiguity affect this estimate.
-- **Covenant Not To Sue** — F1 0.791; 15 gold test spans; Test support and annotation boundary ambiguity affect this estimate.
-- **Rofr/Rofo/Rofn** — F1 0.777; 52 gold test spans; Recall trails precision; the model misses some annotated tokens.
-- **No-Solicit Of Employees** — F1 0.751; 8 gold test spans; Recall trails precision; the model misses some annotated tokens.
+- **Governing Law** — F1 0.957; 47 gold test spans; Recall trails precision; the model misses some annotated tokens.
+- **Covenant Not To Sue** — F1 0.881; 15 gold test spans; Recall trails precision; the model misses some annotated tokens.
+- **Insurance** — F1 0.797; 44 gold test spans; Test support and annotation boundary ambiguity affect this estimate.
+- **No-Solicit Of Employees** — F1 0.792; 8 gold test spans; Test support and annotation boundary ambiguity affect this estimate.
+- **Anti-Assignment** — F1 0.734; 68 gold test spans; Test support and annotation boundary ambiguity affect this estimate.
 
 ### Lowest F1
 
-- **Source Code Escrow** — F1 0.304; 8 gold test spans; Recall trails precision; the model misses some annotated tokens.
-- **Third Party Beneficiary** — F1 0.263; 5 gold test spans; Recall trails precision; the model misses some annotated tokens.
-- **Affiliate License-Licensee** — F1 0.191; 17 gold test spans; Recall trails precision; the model misses some annotated tokens.
-- **Affiliate License-Licensor** — F1 0.079; 4 gold test spans; Only 4 gold test spans; per-category estimate is unstable.
+- **Affiliate License-Licensee** — F1 0.280; 17 gold test spans; Recall trails precision; the model misses some annotated tokens.
+- **Competitive Restriction Exception** — F1 0.269; 18 gold test spans; Recall trails precision; the model misses some annotated tokens.
+- **Most Favored Nation** — F1 0.264; 4 gold test spans; Only 4 gold test spans; per-category estimate is unstable.
+- **Affiliate License-Licensor** — F1 0.035; 4 gold test spans; Only 4 gold test spans; per-category estimate is unstable.
 - **Price Restrictions** — F1 0.000; 4 gold test spans; Only 4 gold test spans; per-category estimate is unstable.
 
 ## Three caveats
