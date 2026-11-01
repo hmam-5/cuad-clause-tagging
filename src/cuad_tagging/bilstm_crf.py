@@ -287,7 +287,11 @@ def train_bilstm_crf(
     model = Model(len(vocabulary)).to(device)
     optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
     run_id = f"bilstm-crf-seed{seed}"
-    checkpoint_path = Path("artifacts") / "checkpoints" / f"{run_id}.pt"
+    checkpoint_path = (
+        Path("artifacts")
+        / "checkpoints"
+        / f"{run_id}-{output_dir.name}.pt"
+    )
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     best_f1 = -1.0
     wait = 0
