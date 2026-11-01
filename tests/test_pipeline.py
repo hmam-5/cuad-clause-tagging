@@ -12,7 +12,12 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from summarize_experiments import _spearman
+from summarize_experiments import (
+    _import_full_transformer_results,
+    _saved_paired_comparisons,
+    _spearman,
+    _write_loss_figure,
+)
 
 from cuad_tagging.baselines import _write_summary
 from cuad_tagging.config import BIO_LABELS
@@ -36,6 +41,7 @@ from cuad_tagging.transformer import (
     _repair_bio_sequence,
     _subsample_o_only_windows,
     _subword_windows,
+    _tokenizer_options,
     _windows,
 )
 
@@ -70,11 +76,19 @@ class TextAndOffsetTests(unittest.TestCase):
 
 
 class LabelAndSplitTests(unittest.TestCase):
+    def test_roberta_tokenizer_options_support_pretokenized_words(self) -> None:
+        self.assertEqual(
+            _tokenizer_options("roberta-base"),
+            {"use_fast": True, "add_prefix_space": True},
+        )
+        self.assertEqual(
+            _tokenizer_options("bert-base-cased"),
+            {"use_fast": True},
+        )
+
     def test_bio_decode_closes_malformed_inside_tag(self) -> None:
         self.assertEqual(
-            decode_bio(
-                ["B-License Grant", "I-License Grant", "I-Governing Law", "O"]
-            ),
+            decode_bio(["B-License Grant", "I-License Grant", "I-Governing Law", "O"]),
             [
                 ("License Grant", 0, 2),
                 ("Governing Law", 2, 3),
@@ -90,20 +104,24 @@ class LabelAndSplitTests(unittest.TestCase):
         for previous, current in pairwise(windows):
             self.assertLessEqual(current["start"], previous["end"])
 
-    def test_subword_windows_respect_piece_budget_and_keep_fitting_span_intact(self) -> None:
+    def test_subword_windows_respect_piece_budget_and_keep_fitting_span_intact(
+        self,
+    ) -> None:
         tags = ["O", "B-License Grant", "I-License Grant", "I-License Grant", "O", "O"]
         counts = [1, 1, 1, 1, 2, 1]
         windows = _subword_windows(
-            tags, counts, max_words=6, overlap_words=1, max_content_pieces=3,
+            tags,
+            counts,
+            max_words=6,
+            overlap_words=1,
+            max_content_pieces=3,
             contract_id="contract",
         )
         self.assertEqual(windows[0], {"start": 0, "end": 1})
         self.assertEqual(windows[1], {"start": 1, "end": 4})
         self.assertEqual(windows[-1]["end"], len(tags))
         for window in windows:
-            self.assertLessEqual(
-                sum(counts[window["start"] : window["end"]]), 3
-            )
+            self.assertLessEqual(sum(counts[window["start"] : window["end"]]), 3)
         for previous, current in pairwise(windows):
             self.assertLessEqual(current["start"], previous["end"])
 
@@ -142,7 +160,9 @@ class LabelAndSplitTests(unittest.TestCase):
         self.assertEqual(batch["input_ids"].tolist(), [[101, 102], [103, 0]])
         self.assertEqual(batch["labels"].dtype, torch.long)
 
-    def test_transformer_repairs_malformed_bio_without_changing_decoded_spans(self) -> None:
+    def test_transformer_repairs_malformed_bio_without_changing_decoded_spans(
+        self,
+    ) -> None:
         raw = ["O", "I-License Grant", "I-License Grant", "O", "I-Parties"]
         repaired = _repair_bio_sequence(raw)
         self.assertEqual(
@@ -214,9 +234,7 @@ class EvaluationTests(unittest.TestCase):
         ]
         first = [sequence[:] for sequence in gold]
         second = [["O", "O"], ["O", "O"]]
-        result = paired_bootstrap_difference(
-            gold, first, second, iterations=10, seed=7
-        )
+        result = paired_bootstrap_difference(gold, first, second, iterations=10, seed=7)
         self.assertGreater(result["two_sided_p"], 0.0)
         self.assertLessEqual(result["two_sided_p"], 1.0)
 
@@ -256,14 +274,22 @@ class PreprocessingIntegrationTests(unittest.TestCase):
             source.write_text(json.dumps({"data": documents}), encoding="utf-8")
             output = root / "processed"
             stats = preprocess(source, output, seed=17, max_tokens=8, stride=2)
-            with lzma.open(output / "contracts.jsonl.xz", "rt", encoding="utf-8") as source:
+            with lzma.open(
+                output / "contracts.jsonl.xz", "rt", encoding="utf-8"
+            ) as source:
                 rows = [json.loads(line) for line in source]
             self.assertEqual(stats["contracts"], 10)
             self.assertEqual(stats["raw_spans"], 10)
             self.assertEqual(len(rows), 10)
-            self.assertEqual({row["split"] for row in rows}, {"train", "validation", "test"})
             self.assertEqual(
-                len((output / "span_corrections.csv").read_text(encoding="utf-8-sig").splitlines()),
+                {row["split"] for row in rows}, {"train", "validation", "test"}
+            )
+            self.assertEqual(
+                len(
+                    (output / "span_corrections.csv")
+                    .read_text(encoding="utf-8-sig")
+                    .splitlines()
+                ),
                 1,
             )
 
@@ -305,6 +331,143 @@ class ResultExportTests(unittest.TestCase):
         self.assertEqual(row["evaluation_scope"], "smoke")
         self.assertEqual(row["best_validation_macro_f1"], "0.6")
         self.assertEqual(row["loss_curve"], "loss/transformer-seed42.csv")
+
+    def test_imports_completed_full_transformer_test_and_validation_results(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            artifacts_dir = root / "artifacts"
+            run_dir = artifacts_dir / "bert-full-seed42"
+            loss_dir = run_dir / "loss"
+            results_dir = root / "results"
+            loss_dir.mkdir(parents=True)
+            (loss_dir / "bert-full-seed42.csv").write_text(
+                "epoch,train_loss,validation_loss\n1,0.5,0.4\n",
+                encoding="utf-8",
+            )
+            test_run = {
+                "run_id": "bert-full-seed42",
+                "model": "BERT",
+                "architecture": "BERT",
+                "checkpoint": "bert-base-cased",
+                "seed": 42,
+                "token_macro_f1": 0.3,
+                "span_strict_micro_f1": 0.2,
+                "span_strict_macro_f1": 0.1,
+                "span_partial_micro_f1": 0.4,
+                "span_partial_macro_f1": 0.3,
+                "bootstrap_95_lower": 0.2,
+                "bootstrap_95_upper": 0.4,
+                "bootstrap_iterations": 1000,
+                "train_seconds": 3600,
+                "inference_ms_per_contract": 800,
+                "training_contracts": 408,
+                "test_contracts": 51,
+                "training_scope": "full",
+                "evaluation_scope": "full",
+                "best_validation_macro_f1": 0.35,
+                "best_epoch": 2,
+                "epochs": 2,
+                "learning_rate": 3e-5,
+                "effective_batch_size": 16,
+                "loss_curve": "artifacts/bert-full-seed42/loss/bert-full-seed42.csv",
+                "predictions_path": "artifacts/bert-full-seed42/predictions.jsonl",
+                "per_category": {},
+            }
+            validation_run = {
+                **test_run,
+                "run_id": "bert-full-seed42-validation",
+                "evaluation_split": "validation",
+                "test_contracts": None,
+                "evaluation_contracts": 51,
+            }
+            (run_dir / "bert-full-seed42.json").write_text(
+                json.dumps(test_run), encoding="utf-8"
+            )
+            (run_dir / "bert-full-seed42-validation.json").write_text(
+                json.dumps(validation_run), encoding="utf-8"
+            )
+
+            imported = _import_full_transformer_results(results_dir, artifacts_dir)
+
+            self.assertEqual(
+                {run["evaluation_split"] for run in imported}, {"test", "validation"}
+            )
+            test_result = json.loads(
+                (results_dir / "bert-full-seed42.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(test_result["evaluation_split"], "test")
+            self.assertEqual(test_result["evaluation_contracts"], 51)
+            self.assertEqual(test_result["loss_curve"], "loss/bert-full-seed42.csv")
+            self.assertTrue((results_dir / test_result["loss_curve"]).is_file())
+
+    def test_loss_figure_reads_utf8_bom_histories(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            loss_path = root / "bert-seed42.csv"
+            loss_path.write_text(
+                "\ufeffepoch,train_loss,validation_loss\n1,0.5,0.4\n",
+                encoding="utf-8",
+            )
+            results_dir = root / "results"
+            results_dir.mkdir()
+            result = _write_loss_figure(
+                results_dir,
+                [
+                    {
+                        "run_id": "bert-seed42",
+                        "architecture": "BERT",
+                        "checkpoint": "bert-base-cased",
+                        "loss_curve": str(loss_path),
+                    }
+                ],
+            )
+
+            self.assertEqual(result, ["bert-seed42"])
+            self.assertTrue((results_dir / "loss_curves.png").is_file())
+            self.assertTrue((results_dir / "loss_curves.pdf").is_file())
+
+    def test_paired_comparisons_skip_missing_prediction_paths(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            results_dir = Path(temporary)
+            (results_dir / "paired_comparison_test.json").write_text(
+                json.dumps(
+                    {
+                        "first_predictions": "artifacts/test_predictions.jsonl",
+                        "second_predictions": "results/lookup_predictions.jsonl",
+                        "paired_contract_bootstrap_macro_f1_difference_first_minus_second": {
+                            "mean_difference": 0.1
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            runs = [
+                {
+                    "run_id": "validation-run",
+                    "architecture": "BERT",
+                    "checkpoint": "bert-base-cased",
+                    "predictions_path": None,
+                },
+                {
+                    "run_id": "crf-run",
+                    "architecture": "CRF",
+                    "checkpoint": "features",
+                    "predictions_path": "artifacts/test_predictions.jsonl",
+                },
+                {
+                    "run_id": "lookup-run",
+                    "architecture": "lookup",
+                    "checkpoint": "none",
+                    "predictions_path": "results/lookup_predictions.jsonl",
+                },
+            ]
+
+            comparisons = _saved_paired_comparisons(results_dir, runs)
+
+            self.assertEqual(comparisons[0]["first"], "CRF | features")
+            self.assertEqual(comparisons[0]["second"], "lookup | none")
 
 
 if __name__ == "__main__":

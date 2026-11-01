@@ -2,8 +2,92 @@
   "dataset_contracts": 510,
   "dataset_spans": 13823,
   "offset_roundtrip_agreement": 1.0,
-  "full_run_count": 3,
+  "full_run_count": 7,
   "model_aggregates": [
+    {
+      "model": "RoBERTa | roberta-base",
+      "seeds": 1,
+      "token_macro_f1_mean": 0.5202011207034875,
+      "token_macro_f1_sd": 0.0,
+      "strict_span_micro_f1_mean": 0.20180096975294387,
+      "partial_span_micro_f1_mean": 0.39852228122835376,
+      "training_minutes_mean": 65.56208921666669,
+      "max_iterations": null,
+      "optimizer_converged": null,
+      "regularization": {
+        "c1": null,
+        "c2": null
+      },
+      "bootstrap_ci_per_run": [
+        [
+          0.465104894311981,
+          0.5433059979277484
+        ]
+      ]
+    },
+    {
+      "model": "BERT | nlpaueb/legal-bert-base-uncased",
+      "seeds": 1,
+      "token_macro_f1_mean": 0.5125164421167189,
+      "token_macro_f1_sd": 0.0,
+      "strict_span_micro_f1_mean": 0.2044172932330827,
+      "partial_span_micro_f1_mean": 0.40789473684210525,
+      "training_minutes_mean": 64.52816397666659,
+      "max_iterations": null,
+      "optimizer_converged": null,
+      "regularization": {
+        "c1": null,
+        "c2": null
+      },
+      "bootstrap_ci_per_run": [
+        [
+          0.4546473332527965,
+          0.5386619794661573
+        ]
+      ]
+    },
+    {
+      "model": "BERT | bert-base-cased",
+      "seeds": 1,
+      "token_macro_f1_mean": 0.5076039447321373,
+      "token_macro_f1_sd": 0.0,
+      "strict_span_micro_f1_mean": 0.15169738118331716,
+      "partial_span_micro_f1_mean": 0.330552861299709,
+      "training_minutes_mean": 64.46245787166676,
+      "max_iterations": null,
+      "optimizer_converged": null,
+      "regularization": {
+        "c1": null,
+        "c2": null
+      },
+      "bootstrap_ci_per_run": [
+        [
+          0.44894522527034525,
+          0.531418230146846
+        ]
+      ]
+    },
+    {
+      "model": "BERT | bert-base-uncased",
+      "seeds": 1,
+      "token_macro_f1_mean": 0.48271084394255825,
+      "token_macro_f1_sd": 0.0,
+      "strict_span_micro_f1_mean": 0.15774871185097109,
+      "partial_span_micro_f1_mean": 0.33650416171224734,
+      "training_minutes_mean": 64.53946139833351,
+      "max_iterations": null,
+      "optimizer_converged": null,
+      "regularization": {
+        "c1": null,
+        "c2": null
+      },
+      "bootstrap_ci_per_run": [
+        [
+          0.42874617269603227,
+          0.5073036564732148
+        ]
+      ]
+    },
     {
       "model": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
       "seeds": 1,
@@ -85,6 +169,32 @@
   ],
   "validation_results": [
     {
+      "run_id": "bert-base-cased-full-seed42-validation",
+      "model": "BERT | bert-base-cased",
+      "token_macro_f1": 0.5104840925737597,
+      "bootstrap_95": [
+        0.4417034937643634,
+        0.5425974521496384
+      ],
+      "strict_span_micro_f1": 0.1469611100254055,
+      "strict_span_macro_f1": 0.11953708325046869,
+      "partial_span_micro_f1": 0.319327731092437,
+      "partial_span_macro_f1": 0.3108161251555901
+    },
+    {
+      "run_id": "bert-base-uncased-full-seed42-validation",
+      "model": "BERT | bert-base-uncased",
+      "token_macro_f1": 0.512042194757764,
+      "bootstrap_95": [
+        0.4413464266799057,
+        0.5429591393151002
+      ],
+      "strict_span_micro_f1": 0.16303005351996705,
+      "strict_span_macro_f1": 0.1420549319051232,
+      "partial_span_micro_f1": 0.3351173322354879,
+      "partial_span_macro_f1": 0.33745641522728154
+    },
+    {
       "run_id": "crf-full-seed42-validation",
       "model": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
       "token_macro_f1": 0.30576471998129917,
@@ -96,22 +206,53 @@
       "strict_span_macro_f1": 0.06601361589916836,
       "partial_span_micro_f1": 0.37018319646241316,
       "partial_span_macro_f1": 0.3247193724713411
+    },
+    {
+      "run_id": "nlpaueb_legal-bert-base-uncased-full-seed42-validation",
+      "model": "BERT | nlpaueb/legal-bert-base-uncased",
+      "token_macro_f1": 0.5387444978038599,
+      "bootstrap_95": [
+        0.47706821943856675,
+        0.5671034462861856
+      ],
+      "strict_span_micro_f1": 0.20931349015842535,
+      "strict_span_macro_f1": 0.1677293149838248,
+      "partial_span_micro_f1": 0.41958713394143066,
+      "partial_span_macro_f1": 0.3947597278777498
+    },
+    {
+      "run_id": "roberta-base-full-seed42-validation",
+      "model": "RoBERTa | roberta-base",
+      "token_macro_f1": 0.5222842019061927,
+      "bootstrap_95": [
+        0.4650863308692472,
+        0.5440039266942932
+      ],
+      "strict_span_micro_f1": 0.20730833532362078,
+      "strict_span_macro_f1": 0.16239254119637112,
+      "partial_span_micro_f1": 0.40363028421304037,
+      "partial_span_macro_f1": 0.3937951965630194
     }
   ],
   "smoke_run_ids": [
     "bert-base-cased-seed42",
     "crf-seed42"
   ],
-  "best_validation_selected_group": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
-  "best_validation_selected_run": "crf-full-seed42-validation",
-  "best_validation_selected_test_run": "crf-full-seed42-test",
+  "best_validation_selected_group": "BERT | nlpaueb/legal-bert-base-uncased",
+  "best_validation_selected_run": "nlpaueb_legal-bert-base-uncased-full-seed42-validation",
+  "best_validation_selected_test_run": "nlpaueb_legal-bert-base-uncased-full-seed42",
   "per_category_report": "per_category_f1.csv",
   "crf_category_analysis": "analysis/crf_full_data_per_category.csv",
   "crf_category_correlations": {
     "strict_span_f1_vs_training_span_count": 0.5489557039701909,
     "strict_span_f1_vs_mean_training_span_tokens": -0.4216571729406779
   },
-  "loss_figure_runs": [],
+  "loss_figure_runs": [
+    "bert-base-cased-full-seed42",
+    "bert-base-uncased-full-seed42",
+    "nlpaueb_legal-bert-base-uncased-full-seed42",
+    "roberta-base-full-seed42"
+  ],
   "paired_comparisons": [
     {
       "first": "word lookup | none",
@@ -128,6 +269,48 @@
       "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
     },
     {
+      "first": "BERT | bert-base-cased",
+      "second": "BERT | bert-base-uncased",
+      "paired_difference": {
+        "mean_difference": 0.02231552113840704,
+        "lower": -4.91103130734194e-06,
+        "upper": 0.042305724030844094,
+        "two_sided_p": 0.050974512743628186,
+        "iterations": 2000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_bert_cased_vs_uncased.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
+      "first": "BERT | bert-base-uncased",
+      "second": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
+      "paired_difference": {
+        "mean_difference": 0.1718345384064868,
+        "lower": 0.1241742219142436,
+        "upper": 0.2161372189836983,
+        "two_sided_p": 0.0009995002498750624,
+        "iterations": 2000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_bert_uncased_vs_crf.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
+      "first": "BERT | bert-base-cased",
+      "second": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
+      "paired_difference": {
+        "mean_difference": 0.1941500595448938,
+        "lower": 0.14287501397806812,
+        "upper": 0.238979076614529,
+        "two_sided_p": 0.0009995002498750624,
+        "iterations": 2000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_bert_vs_crf.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
       "first": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
       "second": "word lookup | none",
       "paired_difference": {
@@ -139,6 +322,62 @@
         "seed": 42.0
       },
       "source_file": "paired_comparison_crf_vs_word_lookup.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
+      "first": "BERT | nlpaueb/legal-bert-base-uncased",
+      "second": "BERT | bert-base-cased",
+      "paired_difference": {
+        "mean_difference": 0.004521327086087504,
+        "lower": -0.023977760969845052,
+        "upper": 0.03453771109167736,
+        "two_sided_p": 0.7776111944027986,
+        "iterations": 2000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_legalbert_vs_bert_cased.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
+      "first": "BERT | nlpaueb/legal-bert-base-uncased",
+      "second": "BERT | bert-base-uncased",
+      "paired_difference": {
+        "mean_difference": 0.02683684822449454,
+        "lower": 0.005849898605611026,
+        "upper": 0.04757607818589843,
+        "two_sided_p": 0.01999000499750125,
+        "iterations": 2000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_legalbert_vs_bert_uncased.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
+      "first": "BERT | nlpaueb/legal-bert-base-uncased",
+      "second": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
+      "paired_difference": {
+        "mean_difference": 0.19867138663098133,
+        "lower": 0.15318735385886673,
+        "upper": 0.2422142788588278,
+        "two_sided_p": 0.0009995002498750624,
+        "iterations": 2000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_legalbert_vs_crf.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
+      "first": "RoBERTa | roberta-base",
+      "second": "BERT | nlpaueb/legal-bert-base-uncased",
+      "paired_difference": {
+        "mean_difference": 0.008753633226696301,
+        "lower": -0.022732555851028735,
+        "upper": 0.036538735685023416,
+        "two_sided_p": 0.5507246376811594,
+        "iterations": 2000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_roberta_vs_legalbert.json",
       "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
     }
   ],

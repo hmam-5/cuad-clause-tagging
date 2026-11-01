@@ -45,7 +45,9 @@ def _average_ranks(values: list[float]) -> list[float]:
 
 def _spearman(first: list[float], second: list[float]) -> float | None:
     if len(first) != len(second) or len(first) < 2:
-        raise ValueError("Spearman correlation requires equally sized vectors of length >= 2.")
+        raise ValueError(
+            "Spearman correlation requires equally sized vectors of length >= 2."
+        )
     first_ranks = _average_ranks(first)
     second_ranks = _average_ranks(second)
     first_mean = statistics.mean(first_ranks)
@@ -69,7 +71,9 @@ def _write_crf_category_analysis(
         return None
     metrics = _read_json(metrics_path)
     training_lengths: dict[str, list[int]] = {category: [] for category in CATEGORIES}
-    with lzma.open(PROCESSED_DATA / "contracts.jsonl.xz", "rt", encoding="utf-8") as source:
+    with lzma.open(
+        PROCESSED_DATA / "contracts.jsonl.xz", "rt", encoding="utf-8"
+    ) as source:
         for line in source:
             record = json.loads(line)
             if record["split"] != "train":
@@ -157,7 +161,9 @@ def _write_crf_category_analysis(
     return correlations
 
 
-def _test_inference_ms_per_contract(artifacts_dir: Path, contract_count: int) -> float | str:
+def _test_inference_ms_per_contract(
+    artifacts_dir: Path, contract_count: int
+) -> float | str:
     log_path = artifacts_dir / "test_evaluation.stdout.log"
     if not log_path.is_file() or contract_count < 1:
         return ""
@@ -265,6 +271,111 @@ def _import_transformer_smoke(results_dir: Path) -> dict[str, Any] | None:
     return result
 
 
+def _import_full_transformer_results(
+    results_dir: Path, artifacts_dir: Path | None = None
+) -> list[dict[str, Any]]:
+    artifacts_root = artifacts_dir or ROOT / "artifacts"
+    candidates: dict[str, tuple[Path, dict[str, Any], dict[str, Any]]] = {}
+    for run_dir in sorted(artifacts_root.iterdir()):
+        if not run_dir.is_dir():
+            continue
+        for test_path in sorted(run_dir.glob("*-seed*.json")):
+            if test_path.stem.endswith("-validation"):
+                continue
+            test_run = _read_json(test_path)
+            if (
+                test_run.get("training_scope") != "full"
+                or test_run.get("evaluation_scope") != "full"
+                or test_run.get("test_contracts") is None
+            ):
+                continue
+            run_id = test_run["run_id"]
+            validation_path = run_dir / f"{run_id}-validation.json"
+            if not validation_path.is_file():
+                raise FileNotFoundError(
+                    f"Completed transformer run is missing {validation_path}."
+                )
+            validation_run = _read_json(validation_path)
+            if (
+                validation_run.get("run_id") != f"{run_id}-validation"
+                or validation_run.get("evaluation_split") != "validation"
+            ):
+                raise ValueError(
+                    f"Invalid validation record for transformer run {run_id}."
+                )
+            current = candidates.get(run_id)
+            if (
+                current is None
+                or test_path.stat().st_mtime_ns > current[0].stat().st_mtime_ns
+            ):
+                candidates[run_id] = (test_path, test_run, validation_run)
+
+    imported = []
+    for run_id, (test_path, test_run, validation_run) in sorted(candidates.items()):
+        loss_filename = Path(test_run["loss_curve"]).name
+        loss_source = test_path.parent / "loss" / loss_filename
+        if not loss_source.is_file():
+            raise FileNotFoundError(
+                f"Completed transformer run is missing {loss_source}."
+            )
+        loss_destination = results_dir / "loss" / loss_filename
+        loss_destination.parent.mkdir(parents=True, exist_ok=True)
+        loss_destination.write_bytes(loss_source.read_bytes())
+        loss_curve = f"loss/{loss_filename}"
+
+        test_record = {
+            key: test_run[key]
+            for key in (
+                "model",
+                "architecture",
+                "checkpoint",
+                "seed",
+                "token_macro_f1",
+                "span_strict_micro_f1",
+                "span_strict_macro_f1",
+                "span_partial_micro_f1",
+                "span_partial_macro_f1",
+                "bootstrap_95_lower",
+                "bootstrap_95_upper",
+                "bootstrap_iterations",
+                "train_seconds",
+                "inference_ms_per_contract",
+                "training_contracts",
+                "test_contracts",
+                "training_scope",
+                "evaluation_scope",
+                "best_validation_macro_f1",
+                "best_epoch",
+                "epochs",
+                "learning_rate",
+                "effective_batch_size",
+                "per_category",
+                "training_hyperparameters",
+                "predictions_path",
+            )
+            if key in test_run
+        }
+        test_record.update(
+            {
+                "run_id": run_id,
+                "evaluation_split": "test",
+                "evaluation_contracts": test_run["test_contracts"],
+                "loss_curve": loss_curve,
+            }
+        )
+        validation_record = {key: value for key, value in validation_run.items()}
+        validation_record["loss_curve"] = loss_curve
+
+        for record in (test_record, validation_record):
+            destination = results_dir / f"{record['run_id']}.json"
+            destination.write_text(
+                json.dumps(record, ensure_ascii=False, indent=2) + "\n",
+                encoding="utf-8",
+            )
+            imported.append(record)
+    return imported
+
+
 def _saved_paired_comparisons(
     results_dir: Path, runs: list[dict[str, Any]]
 ) -> list[dict[str, Any]]:
@@ -285,7 +396,7 @@ def _saved_paired_comparisons(
                 run
                 for run in runs
                 if run["run_id"] == first_run_id
-                or Path(run.get("predictions_path", "")).name == first_path
+                or Path(run.get("predictions_path") or "").name == first_path
             ),
             None,
         )
@@ -294,7 +405,7 @@ def _saved_paired_comparisons(
                 run
                 for run in runs
                 if run["run_id"] == second_run_id
-                or Path(run.get("predictions_path", "")).name == second_path
+                or Path(run.get("predictions_path") or "").name == second_path
             ),
             None,
         )
@@ -332,13 +443,19 @@ def _write_category_report(
         test_spans = int(span_counts.get(category, {}).get("test", 0))
         f1 = float(score.get("f1", 0.0))
         if test_spans < 5:
-            explanation = f"Only {test_spans} gold test spans; per-category estimate is unstable."
+            explanation = (
+                f"Only {test_spans} gold test spans; per-category estimate is unstable."
+            )
         elif f1 == 0:
             explanation = "No correctly labeled test tokens; class imbalance and overlap are likely factors."
         elif score.get("recall", 0.0) < score.get("precision", 0.0):
-            explanation = "Recall trails precision; the model misses some annotated tokens."
+            explanation = (
+                "Recall trails precision; the model misses some annotated tokens."
+            )
         else:
-            explanation = "Test support and annotation boundary ambiguity affect this estimate."
+            explanation = (
+                "Test support and annotation boundary ambiguity affect this estimate."
+            )
         rows.append(
             {
                 "category": category,
@@ -390,7 +507,7 @@ def _write_loss_figure(results_dir: Path, runs: list[dict[str, Any]]) -> list[st
             curve_path = results_dir / "loss" / f"{run['run_id']}.csv"
         if not curve_path.is_file():
             continue
-        with curve_path.open(encoding="utf-8", newline="") as source:
+        with curve_path.open(encoding="utf-8-sig", newline="") as source:
             rows = list(csv.DictReader(source))
         if rows:
             curves.append((run, rows))
@@ -415,8 +532,18 @@ def _write_loss_figure(results_dir: Path, runs: list[dict[str, Any]]) -> list[st
     for index, (run, history) in enumerate(curves):
         axis = axes[index // columns][index % columns]
         epochs = [int(float(row["epoch"])) for row in history]
-        axis.plot(epochs, [float(row["train_loss"]) for row in history], marker="o", label="Train")
-        axis.plot(epochs, [float(row["validation_loss"]) for row in history], marker="s", label="Validation")
+        axis.plot(
+            epochs,
+            [float(row["train_loss"]) for row in history],
+            marker="o",
+            label="Train",
+        )
+        axis.plot(
+            epochs,
+            [float(row["validation_loss"]) for row in history],
+            marker="s",
+            label="Validation",
+        )
         axis.set_title(_run_group(run))
         axis.set_xlabel("Epoch")
         axis.set_ylabel("Loss")
@@ -435,6 +562,7 @@ def _write_loss_figure(results_dir: Path, runs: list[dict[str, Any]]) -> list[st
 def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
     stats = _read_json(PROCESSED_DATA / "stats.json")
     _import_full_crf_results(results_dir)
+    _import_full_transformer_results(results_dir)
     _import_transformer_smoke(results_dir)
     runs = []
     for path in sorted(results_dir.glob("*-seed*.json")):
@@ -442,9 +570,7 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
         if not {"run_id", "token_macro_f1", "model"}.issubset(run):
             continue
         if "training_scope" not in run:
-            run["training_scope"] = (
-                "smoke" if run["model"].lower() == "crf" else "full"
-            )
+            run["training_scope"] = "smoke" if run["model"].lower() == "crf" else "full"
         run.setdefault(
             "evaluation_split",
             "smoke" if run.get("evaluation_scope") == "smoke" else "test",
@@ -459,8 +585,7 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
     validation_runs = [
         run
         for run in runs
-        if run["training_scope"] == "full"
-        and run["evaluation_split"] == "validation"
+        if run["training_scope"] == "full" and run["evaluation_split"] == "validation"
     ]
     smoke_runs = [run for run in runs if run["training_scope"] == "smoke"]
     groups: dict[str, list[dict[str, Any]]] = {}
@@ -471,11 +596,20 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
         row: dict[str, Any] = {
             "model": name,
             "seeds": len(group),
-            "token_macro_f1_mean": statistics.mean(float(run["token_macro_f1"]) for run in group),
+            "token_macro_f1_mean": statistics.mean(
+                float(run["token_macro_f1"]) for run in group
+            ),
             "token_macro_f1_sd": _std([float(run["token_macro_f1"]) for run in group]),
-            "strict_span_micro_f1_mean": statistics.mean(float(run["span_strict_micro_f1"]) for run in group),
-            "partial_span_micro_f1_mean": statistics.mean(float(run["span_partial_micro_f1"]) for run in group),
-            "training_minutes_mean": statistics.mean(float(run["train_seconds"]) for run in group) / 60,
+            "strict_span_micro_f1_mean": statistics.mean(
+                float(run["span_strict_micro_f1"]) for run in group
+            ),
+            "partial_span_micro_f1_mean": statistics.mean(
+                float(run["span_partial_micro_f1"]) for run in group
+            ),
+            "training_minutes_mean": statistics.mean(
+                float(run["train_seconds"]) for run in group
+            )
+            / 60,
             "max_iterations": group[0].get("max_iterations"),
             "optimizer_converged": group[0].get("optimizer_converged"),
             "regularization": {
@@ -499,9 +633,7 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
     if validation_groups:
         best_group, selected_runs = max(
             validation_groups.items(),
-            key=lambda item: max(
-                float(run["token_macro_f1"]) for run in item[1]
-            ),
+            key=lambda item: max(float(run["token_macro_f1"]) for run in item[1]),
         )
         best_validation_run = max(
             selected_runs, key=lambda run: float(run["token_macro_f1"])
@@ -536,9 +668,7 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
                 "c2": run.get("c2"),
                 "train_seconds": run.get("train_seconds"),
                 "final_iteration_loss": run.get("final_iteration_loss"),
-                "final_iteration_error_norm": run.get(
-                    "final_iteration_error_norm"
-                ),
+                "final_iteration_error_norm": run.get("final_iteration_error_norm"),
                 "git_commit_hash": run.get("git_commit_hash", "not recorded"),
             }
             for run in full_runs
@@ -570,21 +700,15 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
         ),
         "per_category_report": "per_category_f1.csv" if categories else None,
         "crf_category_analysis": (
-            "analysis/crf_full_data_per_category.csv"
-            if crf_category_analysis
-            else None
+            "analysis/crf_full_data_per_category.csv" if crf_category_analysis else None
         ),
         "crf_category_correlations": (
             {
                 "strict_span_f1_vs_training_span_count": (
-                    crf_category_analysis[
-                        "strict_span_f1_vs_training_span_count"
-                    ]
+                    crf_category_analysis["strict_span_f1_vs_training_span_count"]
                 ),
                 "strict_span_f1_vs_mean_training_span_tokens": (
-                    crf_category_analysis[
-                        "strict_span_f1_vs_mean_training_span_tokens"
-                    ]
+                    crf_category_analysis["strict_span_f1_vs_mean_training_span_tokens"]
                 ),
             }
             if crf_category_analysis
@@ -611,7 +735,9 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
             ),
         ],
     }
-    with (results_dir / "experiment_summary.json").open("w", encoding="utf-8") as output:
+    with (results_dir / "experiment_summary.json").open(
+        "w", encoding="utf-8"
+    ) as output:
         json.dump(report, output, ensure_ascii=False, indent=2)
         output.write("\n")
 

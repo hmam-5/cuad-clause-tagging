@@ -1,0 +1,2 @@
+﻿contract_a,split_a,contract_b,split_b,exact_text_match,simhash_hamming_distance,cross_split
+"ADUROBIOTECH,INC_06_02_2020-EX-10.7-CONSULTING AGREEMENT(1)",train,"ADUROBIOTECH,INC_06_02_2020-EX-10.7-CONSULTING AGREEMENT",train,True,0,False

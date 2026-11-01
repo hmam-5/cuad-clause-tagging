@@ -1,0 +1,40 @@
+{
+  "prediction_file": "roberta-base-full-seed42_predictions.jsonl",
+  "test_contracts": 51,
+  "error_counts": {
+    "boundary_error": 390,
+    "hallucinated_span": 2222,
+    "missed_span": 233,
+    "wrong_category": 111
+  },
+  "error_shares": {
+    "boundary_error": 0.13193504736129905,
+    "hallucinated_span": 0.7516914749661705,
+    "missed_span": 0.07882273342354533,
+    "wrong_category": 0.037550744248985114
+  },
+  "total_span_errors": 2956,
+  "sampled_errors": 30,
+  "sampled_error_counts": {
+    "boundary_error": 4,
+    "hallucinated_span": 23,
+    "missed_span": 1,
+    "wrong_category": 2
+  },
+  "error_sample": "sampled_errors.csv",
+  "duplicate_audit": {
+    "contracts": 510,
+    "exact_duplicate_groups": [
+      [
+        "ADUROBIOTECH,INC_06_02_2020-EX-10.7-CONSULTING AGREEMENT(1)",
+        "ADUROBIOTECH,INC_06_02_2020-EX-10.7-CONSULTING AGREEMENT"
+      ]
+    ],
+    "exact_duplicate_contract_pairs": 1,
+    "near_duplicate_pairs_at_or_below_hamming_threshold": 1,
+    "cross_split_near_duplicate_pairs": 0,
+    "simhash_hamming_threshold": 4,
+    "method": "64-bit SimHash over lowercased five-word shingles, using up to 512 uniformly spaced shingles per contract. It is approximate and may miss shared boilerplate within otherwise different contracts."
+  },
+  "near_duplicate_pairs_file": "near_duplicate_pairs.csv"
+}

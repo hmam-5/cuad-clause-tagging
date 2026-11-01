@@ -45,6 +45,13 @@ def load_records(path: Path) -> list[dict[str, Any]]:
     return records
 
 
+def _tokenizer_options(checkpoint: str) -> dict[str, bool]:
+    options = {"use_fast": True}
+    if "roberta" in checkpoint.lower():
+        options["add_prefix_space"] = True
+    return options
+
+
 def _windows(
     records: list[dict[str, Any]],
     max_words: int,
@@ -628,7 +635,9 @@ def train_transformer(
         f"validation={len(validation_records)} test={len(test_records)}",
         flush=True,
     )
-    tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_fast=True)
+    tokenizer = AutoTokenizer.from_pretrained(
+        checkpoint, **_tokenizer_options(checkpoint)
+    )
     if not tokenizer.is_fast:
         raise ValueError("A fast tokenizer is required for subword-to-word alignment.")
     if tokenizer.pad_token_id is None:

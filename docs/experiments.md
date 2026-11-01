@@ -35,7 +35,7 @@ token-classification checkpoints. The intended comparison is:
 |---|---|
 | BERT | `bert-base-cased` |
 | BERT | `bert-base-uncased` |
-| BERT | `nlpaueb/legalbert-base-uncased` |
+| BERT | `nlpaueb/legal-bert-base-uncased` |
 | RoBERTa | `roberta-base` |
 | DeBERTa | `microsoft/deberta-v3-base` |
 
@@ -46,11 +46,14 @@ subword-piece budget, so a word that expands into many pieces cannot silently
 truncate neighboring tokens. A span is kept intact where its full tokenized
 length fits during training; exceptionally long spans can still cross windows.
 Validation and test window boundaries depend only on tokens and subword lengths,
-not on gold BIO tags.
+not on gold BIO tags. RoBERTa fast tokenizers enable `add_prefix_space` for
+pretokenized word input.
 Class weights use inverse-square-root train frequencies, capped at 10 before
 normalization. A fast tokenizer window that would truncate words fails loudly;
 adaptive subword-safe boundaries are applied before encoding rather than
-silently dropping tokens.
+silently dropping tokens. DeBERTa-v3 requires `protobuf` for SentencePiece
+tokenizer conversion, and Transformers warns that the converted fast tokenizer
+does not implement byte fallback; some pieces may become unknown tokens.
 
 Transformer training defaults to a physical batch size of 2 with 8 gradient
 accumulation steps (effective batch size 16), AdamW, a linear learning-rate
@@ -94,7 +97,10 @@ proof that no boilerplate leakage exists.
 `scripts/summarize_experiments.py` aggregates only full-data runs, reports
 mean/standard deviation across available seeds, writes a one-page findings
 summary, and creates per-category and loss-curve figures. A model with fewer
-than three completed seeds is explicitly exploratory.
+than three completed seeds is explicitly exploratory. Completed full
+transformer test and validation records are imported from their run directories
+under ignored `artifacts/`; their loss histories are copied into tracked
+`results/loss/`. Incomplete transformer runs are not imported.
 
 ## Reproducible runs
 
@@ -103,7 +109,7 @@ python scripts/train_baselines.py --model all --seed 42
 python scripts/train_bilstm_crf.py --seed 42
 python scripts/train_transformer.py --checkpoint bert-base-cased --seed 42
 python scripts/train_transformer.py --checkpoint bert-base-uncased --seed 42
-python scripts/train_transformer.py --checkpoint nlpaueb/legalbert-base-uncased --seed 42
+python scripts/train_transformer.py --checkpoint nlpaueb/legal-bert-base-uncased --seed 42
 python scripts/train_transformer.py --checkpoint roberta-base --seed 42
 python scripts/train_transformer.py --checkpoint microsoft/deberta-v3-base --seed 42
 ```
