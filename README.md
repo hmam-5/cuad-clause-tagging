@@ -1,14 +1,14 @@
 # CUAD Clause Tagging
 
-Reproducible NLP course project for tagging legal clause spans in the
-Contract Understanding Atticus Dataset (CUAD v1). The task is token
-classification over 41 lawyer-annotated clause categories, represented as 83
-BIO labels. It is not named-entity recognition: the labels describe the legal
-function of a passage.
+Reproducible NLP project for finding and classifying legal clause spans in
+CUAD v1. The goal is token classification over 41 lawyer-annotated contract
+clause categories represented by 83 BIO labels. The labels describe the legal
+function of a passage; this is not legal advice.
 
-> **Scope and caveat:** the source contains legal contracts and annotations;
-> this is an NLP research project, not legal advice. No model scores are
-> claimed until the corresponding experiment has been run.
+This task is difficult because clauses may be long, overlap, and occur in
+contracts from different domains; most tokens are outside any annotated
+clause; and some categories have very few examples. A correct boundary and
+category are both needed for a strict span match.
 
 ## Dataset and measured preprocessing
 
@@ -43,11 +43,6 @@ release, preprocessing found:
 | Token-span round-trip agreement | 100% |
 | Invisible Unicode format characters removed | 184 |
 
-For a presentation-ready walkthrough of the task, complete pipeline, measured
-results, caveats, and likely questions, see
-[docs/PROJECT_REPORT.md](./docs/PROJECT_REPORT.md). It distinguishes
-implemented components from experiments that are still pending.
-
 Three categories have fewer than five test spans (`Most Favored Nation`,
 `Price Restrictions`, `Affiliate License-Licensor`); their test F1 will be
 uncertain. These are dataset/preprocessing counts, not model results. Run the
@@ -55,9 +50,53 @@ majority baseline before making a go/no-go claim about task difficulty. The
 measured all-`O` baseline has 0.0000 token macro F1 and 0.0000 strict-span micro
 F1. The most-frequent-word baseline has 0.0084 token macro F1 (contract
 bootstrap 95% CI 0.0067–0.0096), 0.0000 strict-span micro F1, and 0.1110
-partial-span macro F1. These trivial baselines do not saturate the task. This
-alone is not a final go/no-go; compare a trained feature CRF and transformer
-before claiming feasibility.
+partial-span macro F1. The severe class imbalance and scarce categories make
+macro-F1 and per-class span evaluation more informative than accuracy alone.
+
+## Full-data results
+
+The table reports full-data runs on the fixed 51-contract test split. Token
+macro F1 is the average across the 41 clause categories (the `O` label is
+excluded). Span micro F1 uses exact boundaries for strict scoring and any
+overlap for partial scoring. LegalBERT is the best single model by validation
+token macro F1. A separate ensemble uses weights selected on validation from
+80 combinations; the test set was not used for that selection. Its result is
+exploratory because the validation grid search can overfit.
+
+| Model / checkpoint | Seed | Validation token macro F1 | Test token macro F1 | Test strict span micro F1 | Test partial span micro F1 |
+|---|---:|---:|---:|---:|---:|
+| CRF | 42 | 0.3058 | 0.3103 | 0.1035 | 0.3788 |
+| BERT `bert-base-cased` | 42 | 0.5105 | 0.5076 | 0.1517 | 0.3306 |
+| BERT `bert-base-uncased` | 42 | 0.5120 | 0.4827 | 0.1577 | 0.3365 |
+| LegalBERT `nlpaueb/legal-bert-base-uncased` | 42 | **0.5387** | 0.5125 | **0.2044** | **0.4079** |
+| RoBERTa `roberta-base` | 42 | 0.5223 | **0.5202** | 0.2018 | 0.3985 |
+| Weighted-vote ensemble (uncased BERT 1, LegalBERT 2, RoBERTa 2) | 42 per model | 0.5528 | **0.5342** | **0.2242** | **0.4423** |
+
+Values are from [`results/metrics.csv`](./results/metrics.csv). Each listed
+model has one seed; bootstrap intervals quantify test-contract resampling,
+not run-to-run training variation. The ensemble result and its 95% test
+contract-bootstrap interval (0.4791–0.5571) are recorded separately in
+[`results/ensemble_validation_selected.json`](./results/ensemble_validation_selected.json).
+Its paired improvement over RoBERTa was not significant (p=0.1819).
+
+### CRF and transformer span behavior
+
+The transformers and their ensemble have higher strict span micro F1 than the
+CRF, while the CRF's partial span score is closer to the individual
+LegalBERT/RoBERTa models than its strict score suggests. Test audits show
+different error profiles: the CRF mostly misses gold spans; the transformers
+mostly hallucinate spans.
+
+| Model | Strict span micro F1 | Partial span micro F1 | Missed spans | Hallucinated spans |
+|---|---:|---:|---:|---:|
+| CRF | 0.1035 | 0.3788 | 837 | 79 |
+| LegalBERT | 0.2044 | 0.4079 | 226 | 2,140 |
+| RoBERTa | 0.2018 | 0.3985 | 233 | 2,222 |
+
+Counts are from the test audits in
+[`results/audit/crf_full_data/`](./results/audit/crf_full_data/),
+[`results/audit/legalbert_full_data/`](./results/audit/legalbert_full_data/),
+and [`results/audit/roberta_full_data/`](./results/audit/roberta_full_data/).
 
 ## Quick start
 
@@ -79,20 +118,22 @@ memory-intensive. Use `--max-train-contracts 10` for a smoke run, not a
 reported final comparison. All splits are contract-level, and no window from
 one contract can leak into another split.
 
-The transformer experiment accepts any Hugging Face token-classification
-checkpoint, so the planned BERT, LegalBERT, RoBERTa, and DeBERTa comparisons
-use one training/evaluation pipeline. Install a PyTorch build suitable for
-your hardware before those runs. Save checkpoints under `artifacts/` (ignored
-by Git); report architecture and exact checkpoint separately.
+The transformer trainer accepts Hugging Face token-classification
+checkpoints. Install a PyTorch build suitable for your hardware. Checkpoints
+and run logs are written under ignored `artifacts/`.
 
 ```powershell
 python scripts/train_transformer.py --checkpoint bert-base-cased --seed 42 --epochs 1 --max-train-contracts 4 --max-eval-contracts 2 --output-dir artifacts/smoke
 python scripts/train_bilstm_crf.py --seed 42
-python scripts/train_transformer.py --checkpoint bert-base-cased --seed 42
-python scripts/train_transformer.py --checkpoint nlpaueb/legalbert-base-uncased --seed 42
-python scripts/train_transformer.py --checkpoint roberta-base --seed 42
-python scripts/train_transformer.py --checkpoint microsoft/deberta-v3-base --seed 42
+python scripts/train_transformer.py --checkpoint bert-base-cased --seed 42 --epochs 8 --patience 2 --batch-size 2 --gradient-accumulation-steps 8 --learning-rate 3e-5 --max-length 512 --window-words 128 --stride-words 32 --o-only-fraction 0.25 --mixed-precision auto
+python scripts/train_transformer.py --checkpoint bert-base-uncased --seed 42 --epochs 8 --patience 2 --batch-size 2 --gradient-accumulation-steps 8 --learning-rate 3e-5 --max-length 512 --window-words 128 --stride-words 32 --o-only-fraction 0.25 --mixed-precision auto
+python scripts/train_transformer.py --checkpoint nlpaueb/legal-bert-base-uncased --seed 42 --epochs 8 --patience 2 --batch-size 2 --gradient-accumulation-steps 8 --learning-rate 3e-5 --max-length 512 --window-words 128 --stride-words 32 --o-only-fraction 0.25 --mixed-precision auto
+python scripts/train_transformer.py --checkpoint roberta-base --seed 42 --epochs 8 --patience 2 --batch-size 2 --gradient-accumulation-steps 8 --learning-rate 3e-5 --max-length 512 --window-words 128 --stride-words 32 --o-only-fraction 0.25 --mixed-precision auto
 ```
+
+Checkpoint selection uses validation token macro F1. The test split is
+evaluated after selection and is not used to tune hyperparameters. For a
+multi-seed study, change `--seed` while keeping the contract split fixed.
 
 Run each main model with at least three seeds for the final report. Compare
 saved prediction files with `scripts/compare_models.py`; run
@@ -141,6 +182,11 @@ SimHash is approximate and does not rule out partial boilerplate overlap.
   documented in [docs/preprocessing.md](./docs/preprocessing.md). It can be
   regenerated from the raw JSON and is safe to keep under the 50 MiB file
   threshold.
+- Prepared-data analysis uses 512-word windows with stride 128
+  ([`data/processed/stats.json`](./data/processed/stats.json)). Transformer
+  training re-tokenizes and creates subword-safe windows of up to 128 words
+  with 32-word overlap; it retains all labeled training windows and 25% of
+  O-only training windows. These are distinct windowing stages and settings.
 - Dataset tables and plots are written under `results/analysis/`. Model
   metrics, predictions, and loss curves are written under `results/`; these
   outputs are kept by `.gitignore`.
@@ -153,23 +199,29 @@ SimHash is approximate and does not rule out partial boilerplate overlap.
 ## Repository map
 
 ```text
-data/raw/                  Official source JSON and provenance
-data/processed/            Reproducible compressed tokenized dataset and stats
-src/cuad_tagging/          Config, offsets/windows/splits, metrics, baselines, neural trainers
-scripts/download_data.py   Fetch official source JSON and record provenance
-scripts/prepare_data.py    Create the compact offset-preserving processed dataset
-scripts/analyze_data.py    Export class/span/split tables and dataset figures
-scripts/train_baselines.py Run O-only, word lookup, or CRF baseline
-scripts/train_bilstm_crf.py Train the random-embedding BiLSTM-CRF
-scripts/train_transformer.py Fine-tune a Hugging Face token classifier
-scripts/compare_models.py  Paired contract-bootstrap comparison
-scripts/audit_predictions.py Sample span errors and check duplicate contracts
-scripts/summarize_experiments.py Create Stage 6 findings and model figures
-scripts/build_presentation.py Generate the evidence-based PowerPoint draft
-docs/                      Preprocessing, experiment protocol, rehearsal and Q&A
-tests/                     Offset, tagging, split, metric, audit, integration tests
-contributions/             Per-member contribution template
-results/                   Generated CSV/LaTeX tables, plots, and metrics
+data/raw/                       Downloaded source data and provenance
+data/processed/                 Compressed contracts, labels, splits, and preparation statistics
+src/cuad_tagging/               Configuration, preprocessing, metrics, baselines, and model trainers
+scripts/download_data.py        Download CUAD source data and record provenance
+scripts/prepare_data.py         Validate spans and create processed contracts
+scripts/analyze_data.py         Summarize dataset distributions and export plots
+scripts/train_baselines.py      Train O-only, word-lookup, or CRF baselines
+scripts/train_bilstm_crf.py     Train the BiLSTM-CRF (implemented, not benchmarked)
+scripts/train_transformer.py    Fine-tune and evaluate transformer token classifiers
+scripts/compare_models.py       Compare prediction files with paired contract bootstrap
+scripts/audit_predictions.py    Audit span errors and screen for duplicate contracts
+scripts/summarize_experiments.py Export result tables and experiment summaries
+scripts/plot_loss_curves.py     Plot recorded training and validation losses
+scripts/build_presentation.py   Build a PowerPoint from recorded project results
+run_all.ps1                     Run the Windows reproduction pipeline
+docs/                           Data-preparation and experiment documentation
+tests/                          Unit and integration tests
+contributions/                  Per-member contribution records and templates
+results/analysis/               Dataset analysis tables and plots
+results/audit/                  Test error and duplicate-screening audits
+results/loss/                   Tracked transformer loss histories
+results/                         Tracked experiment metrics, summaries, comparisons, and plots
+artifacts/                      Ignored checkpoints, predictions, and run logs
 ```
 
 ## Attribution
@@ -183,12 +235,22 @@ Expert-Annotated NLP Dataset for Legal Contract Review*. NeurIPS.
 ## Project status and limitations
 
 The raw data, auditable cleaning, BIO/multi-label conversion, contract splits,
-windowing, dataset analysis, scoring utilities, majority/CRF baselines,
-prediction audits, and the transformer/BiLSTM-CRF trainers are implemented.
-The CRF row in the checked-in table is a 10-contract smoke result, not a
-full-training score. Run the neural models and repeat the main comparisons
-with at least three seeds before claiming a final ranking. The generated
-`results/findings_summary.md` reports actual runs and flags single-seed
-uncertainty. Complete one separately named file per real team member based on
-`contributions/CONTRIBUTIONS_TEMPLATE.md`; never invent names, commits, or
-contribution history.
+windowing, dataset analysis, scoring utilities, baselines, prediction audits,
+and transformer/BiLSTM-CRF training code are implemented. All full-data models
+currently have one seed and use one fixed contract split. The CRF reached its
+100-iteration cap without convergence. Three categories have fewer than five
+gold test spans. Duplicate screening uses approximate SimHash and cannot rule
+out partial boilerplate overlap. DeBERTa's full run is incomplete; BiLSTM-CRF
+has not been run. Transformer validation loss rises after about epoch 2 while
+validation F1 continues to improve; checkpoints are selected by validation
+token macro F1 (validation loss only breaks ties). The four seed-42 transformer
+result records report 128-word windows and stride 32, but do not record a code
+revision or evaluation-window-boundary flag. The fixed leakage-prevention code
+is present in commit `17b18e1`; historical run metadata alone cannot prove
+which source revision produced those outputs. Loss curves show validation loss
+rising after about epoch 2, while validation F1 often continues to improve
+through later epochs; checkpoint selection uses validation token macro F1.
+
+Contribution records must use real names, IDs, accounts, and commit history.
+`git log --all --format='%an'` currently reports one author, `hmam-5`, with
+eight commits; see [contributions/README.md](./contributions/README.md).
