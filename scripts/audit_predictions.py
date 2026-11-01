@@ -212,6 +212,10 @@ def audit(
     counts: dict[str, int] = defaultdict(int)
     for error in errors:
         counts[error["error_type"]] += 1
+    error_shares = {
+        error_type: count / len(errors) if errors else 0.0
+        for error_type, count in sorted(counts.items())
+    }
     rng = random.Random(seed)
     sample = rng.sample(errors, min(sample_size, len(errors)))
     sampled_counts: dict[str, int] = defaultdict(int)
@@ -257,6 +261,7 @@ def audit(
         "prediction_file": predictions_path.name,
         "test_contracts": len(predictions),
         "error_counts": dict(sorted(counts.items())),
+        "error_shares": error_shares,
         "total_span_errors": len(errors),
         "sampled_errors": len(sample),
         "sampled_error_counts": dict(sorted(sampled_counts.items())),

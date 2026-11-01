@@ -9,6 +9,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "scripts"))
+
+from summarize_experiments import _spearman
 
 from cuad_tagging.baselines import _write_summary
 from cuad_tagging.metrics import (
@@ -109,6 +112,10 @@ class LabelAndSplitTests(unittest.TestCase):
 
 
 class EvaluationTests(unittest.TestCase):
+    def test_spearman_uses_average_ranks_for_ties(self) -> None:
+        self.assertAlmostEqual(_spearman([1, 2, 2, 4], [10, 20, 20, 40]), 1.0)
+        self.assertIsNone(_spearman([1, 1, 1], [1, 2, 3]))
+
     def test_token_macro_f1_and_span_boundary_metrics(self) -> None:
         gold = [["B-License Grant", "I-License Grant", "O"]]
         predicted = [["B-License Grant", "O", "O"]]

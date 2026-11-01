@@ -1,0 +1,117 @@
+{
+  "model": "full-data CRF seed 42",
+  "evaluation_split": "test",
+  "category_metric": "strict span F1",
+  "categories": 41,
+  "strict_span_f1_vs_training_span_count": 0.5489557039701909,
+  "strict_span_f1_vs_mean_training_span_tokens": -0.4216571729406779,
+  "top_five": [
+    {
+      "category": "Governing Law",
+      "strict_span_f1": 0.49438202247191015,
+      "precision": 0.5238095238095238,
+      "recall": 0.46808510638297873,
+      "gold_test_spans": 47,
+      "training_spans": 370,
+      "mean_training_span_tokens": 37.64324324324324,
+      "fewer_than_5_test_spans": false
+    },
+    {
+      "category": "Document Name",
+      "strict_span_f1": 0.3013698630136986,
+      "precision": 0.5238095238095238,
+      "recall": 0.21153846153846154,
+      "gold_test_spans": 53,
+      "training_spans": 417,
+      "mean_training_span_tokens": 3.6402877697841727,
+      "fewer_than_5_test_spans": false
+    },
+    {
+      "category": "Notice Period To Terminate Renewal",
+      "strict_span_f1": 0.2962962962962963,
+      "precision": 0.3333333333333333,
+      "recall": 0.26666666666666666,
+      "gold_test_spans": 16,
+      "training_spans": 95,
+      "mean_training_span_tokens": 60.27368421052632,
+      "fewer_than_5_test_spans": false
+    },
+    {
+      "category": "Anti-Assignment",
+      "strict_span_f1": 0.2150537634408602,
+      "precision": 0.2777777777777778,
+      "recall": 0.17543859649122806,
+      "gold_test_spans": 68,
+      "training_spans": 523,
+      "mean_training_span_tokens": 54.5697896749522,
+      "fewer_than_5_test_spans": false
+    },
+    {
+      "category": "Change Of Control",
+      "strict_span_f1": 0.2,
+      "precision": 0.3,
+      "recall": 0.15,
+      "gold_test_spans": 24,
+      "training_spans": 212,
+      "mean_training_span_tokens": 75.59433962264151,
+      "fewer_than_5_test_spans": false
+    }
+  ],
+  "bottom_five": [
+    {
+      "category": "Revenue/Profit Sharing",
+      "strict_span_f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "gold_test_spans": 29,
+      "training_spans": 350,
+      "mean_training_span_tokens": 69.29142857142857,
+      "fewer_than_5_test_spans": false
+    },
+    {
+      "category": "Rofr/Rofo/Rofn",
+      "strict_span_f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "gold_test_spans": 52,
+      "training_spans": 276,
+      "mean_training_span_tokens": 76.80072463768116,
+      "fewer_than_5_test_spans": false
+    },
+    {
+      "category": "Source Code Escrow",
+      "strict_span_f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "gold_test_spans": 8,
+      "training_spans": 47,
+      "mean_training_span_tokens": 71.70212765957447,
+      "fewer_than_5_test_spans": false
+    },
+    {
+      "category": "Third Party Beneficiary",
+      "strict_span_f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "gold_test_spans": 5,
+      "training_spans": 30,
+      "mean_training_span_tokens": 39.63333333333333,
+      "fewer_than_5_test_spans": false
+    },
+    {
+      "category": "Unlimited/All-You-Can-Eat-License",
+      "strict_span_f1": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "gold_test_spans": 7,
+      "training_spans": 19,
+      "mean_training_span_tokens": 71.42105263157895,
+      "fewer_than_5_test_spans": false
+    }
+  ],
+  "categories_with_fewer_than_five_test_spans": [
+    "Affiliate License-Licensor",
+    "Most Favored Nation",
+    "Price Restrictions"
+  ]
+}

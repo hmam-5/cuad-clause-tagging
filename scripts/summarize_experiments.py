@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import lzma
 import math
 import statistics
 import sys
@@ -15,7 +16,7 @@ sys.path.insert(0, str(ROOT / "src"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from cuad_tagging.baselines import _write_summary
-from cuad_tagging.config import PROCESSED_DATA, RESULTS
+from cuad_tagging.config import CATEGORIES, PROCESSED_DATA, RESULTS
 
 
 def _read_json(path: Path) -> dict[str, Any]:
@@ -25,6 +26,135 @@ def _read_json(path: Path) -> dict[str, Any]:
 
 def _std(values: list[float]) -> float:
     return statistics.stdev(values) if len(values) > 1 else 0.0
+
+
+def _average_ranks(values: list[float]) -> list[float]:
+    order = sorted(range(len(values)), key=values.__getitem__)
+    ranks = [0.0] * len(values)
+    start = 0
+    while start < len(order):
+        end = start + 1
+        while end < len(order) and values[order[end]] == values[order[start]]:
+            end += 1
+        average_rank = ((start + 1) + end) / 2
+        for position in range(start, end):
+            ranks[order[position]] = average_rank
+        start = end
+    return ranks
+
+
+def _spearman(first: list[float], second: list[float]) -> float | None:
+    if len(first) != len(second) or len(first) < 2:
+        raise ValueError("Spearman correlation requires equally sized vectors of length >= 2.")
+    first_ranks = _average_ranks(first)
+    second_ranks = _average_ranks(second)
+    first_mean = statistics.mean(first_ranks)
+    second_mean = statistics.mean(second_ranks)
+    covariance = sum(
+        (left - first_mean) * (right - second_mean)
+        for left, right in zip(first_ranks, second_ranks)
+    )
+    first_variance = sum((rank - first_mean) ** 2 for rank in first_ranks)
+    second_variance = sum((rank - second_mean) ** 2 for rank in second_ranks)
+    if first_variance == 0 or second_variance == 0:
+        return None
+    return covariance / math.sqrt(first_variance * second_variance)
+
+
+def _write_crf_category_analysis(
+    results_dir: Path, stats: dict[str, Any]
+) -> dict[str, Any] | None:
+    metrics_path = ROOT / "artifacts" / "crf_full_data" / "test_metrics.json"
+    if not metrics_path.is_file():
+        return None
+    metrics = _read_json(metrics_path)
+    training_lengths: dict[str, list[int]] = {category: [] for category in CATEGORIES}
+    with lzma.open(PROCESSED_DATA / "contracts.jsonl.xz", "rt", encoding="utf-8") as source:
+        for line in source:
+            record = json.loads(line)
+            if record["split"] != "train":
+                continue
+            for span in record["spans"]:
+                category = CATEGORIES[span[0]]
+                training_lengths[category].append(span[6] - span[5])
+
+    strict_scores = metrics["span"]["strict"]["per_category"]
+    span_counts = stats["per_category_spans"]
+    rows = []
+    for category in CATEGORIES:
+        test_spans = int(span_counts[category]["test"])
+        train_spans = int(span_counts[category]["train"])
+        score = strict_scores[category]
+        lengths = training_lengths[category]
+        rows.append(
+            {
+                "category": category,
+                "strict_span_f1": float(score["f1"]),
+                "precision": float(score["precision"]),
+                "recall": float(score["recall"]),
+                "gold_test_spans": test_spans,
+                "training_spans": train_spans,
+                "mean_training_span_tokens": (
+                    statistics.mean(lengths) if lengths else 0.0
+                ),
+                "fewer_than_5_test_spans": test_spans < 5,
+            }
+        )
+    rows.sort(key=lambda row: (-row["strict_span_f1"], row["category"]))
+    analysis_dir = results_dir / "analysis"
+    analysis_dir.mkdir(parents=True, exist_ok=True)
+    csv_path = analysis_dir / "crf_full_data_per_category.csv"
+    with csv_path.open("w", encoding="utf-8-sig", newline="") as output:
+        writer = csv.DictWriter(output, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+
+    tex_path = analysis_dir / "crf_full_data_per_category.tex"
+    headers = [
+        "Category",
+        "Strict span F1",
+        "Gold test spans",
+        "Training spans",
+        "Mean training span tokens",
+        "Test support < 5",
+    ]
+    with tex_path.open("w", encoding="utf-8") as output:
+        output.write("\\begin{tabular}{lrrrrr}\n\\toprule\n")
+        output.write(" & ".join(headers) + " \\\\\n\\midrule\n")
+        for row in rows:
+            category = row["category"].replace("&", r"\&").replace("_", r"\_")
+            output.write(
+                f"{category} & {row['strict_span_f1']:.6f} "
+                f"& {row['gold_test_spans']} & {row['training_spans']} "
+                f"& {row['mean_training_span_tokens']:.3f} "
+                f"& {str(row['fewer_than_5_test_spans']).lower()} \\\\\n"
+            )
+        output.write("\\bottomrule\n\\end{tabular}\n")
+
+    correlations = {
+        "model": "full-data CRF seed 42",
+        "evaluation_split": "test",
+        "category_metric": "strict span F1",
+        "categories": len(rows),
+        "strict_span_f1_vs_training_span_count": _spearman(
+            [row["strict_span_f1"] for row in rows],
+            [float(row["training_spans"]) for row in rows],
+        ),
+        "strict_span_f1_vs_mean_training_span_tokens": _spearman(
+            [row["strict_span_f1"] for row in rows],
+            [row["mean_training_span_tokens"] for row in rows],
+        ),
+        "top_five": rows[:5],
+        "bottom_five": rows[-5:],
+        "categories_with_fewer_than_five_test_spans": [
+            row["category"] for row in rows if row["fewer_than_5_test_spans"]
+        ],
+    }
+    (analysis_dir / "crf_category_correlations.json").write_text(
+        json.dumps(correlations, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return correlations
 
 
 def _test_inference_ms_per_contract(artifacts_dir: Path, contract_count: int) -> float | str:
@@ -385,6 +515,7 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
                 ),
             )
     categories = _write_category_report(results_dir, best_test_run, stats)
+    crf_category_analysis = _write_crf_category_analysis(results_dir, stats)
     loss_runs = _write_loss_figure(results_dir, full_runs)
 
     significance = _saved_paired_comparisons(results_dir, runs)
@@ -438,6 +569,27 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
             best_test_run["run_id"] if best_test_run else None
         ),
         "per_category_report": "per_category_f1.csv" if categories else None,
+        "crf_category_analysis": (
+            "analysis/crf_full_data_per_category.csv"
+            if crf_category_analysis
+            else None
+        ),
+        "crf_category_correlations": (
+            {
+                "strict_span_f1_vs_training_span_count": (
+                    crf_category_analysis[
+                        "strict_span_f1_vs_training_span_count"
+                    ]
+                ),
+                "strict_span_f1_vs_mean_training_span_tokens": (
+                    crf_category_analysis[
+                        "strict_span_f1_vs_mean_training_span_tokens"
+                    ]
+                ),
+            }
+            if crf_category_analysis
+            else None
+        ),
         "loss_figure_runs": loss_runs,
         "paired_comparisons": significance,
         "caveats": [
