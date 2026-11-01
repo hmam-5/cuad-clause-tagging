@@ -75,10 +75,13 @@ The completed full-data table contains seed-42 results for the CRF,
 BiLSTM-CRF,
 `bert-base-cased`, `bert-base-uncased`,
 `nlpaueb/legal-bert-base-uncased`, `roberta-base`, and DeBERTa, plus a second
-LegalBERT run with seed 43. Both LegalBERT results are reported as separate
-seed-specific rows, not combined into a mean or standard deviation. The
+LegalBERT run with seed 43 and a second cased-BERT run with seed 43. Both
+seed pairs are reported as separate rows, not combined into a mean or standard
+deviation. The
 validation-selected weighted-vote ensemble is a separate exploratory record.
-All completed runs use the same single contract-level split. The CRF reached
+All completed model runs use the same single contract-level split so far. The
+LegalBERT seed-42 run on the verified alternate split is now in progress. The
+CRF reached
 its 100-iteration cap without convergence. The full BiLSTM-CRF seed-42 run
 completed eight epochs; its selected checkpoint and test results are recorded
 in `results/bilstm-crf-seed42.json`, its loss history in
@@ -98,6 +101,23 @@ span micro/macro F1 0.423576/0.344502. The test audit found 1,314 span errors:
 for checkpoint selection. The BiLSTM-CRF has a lower token macro F1 than the
 transformers but higher partial span micro F1 than each individual transformer
 run; it does not resolve the CRF's missed-span tendency.
+
+The cased BERT seed-43 full run used the same 408/51/51 split and the same
+settings as seed 42: eight epochs, batch size 2, gradient accumulation 8,
+learning rate 3e-5, 128-word windows with 32-word overlap, and 25% O-only
+training-window retention. It completed all epochs; validation token macro F1
+improved through epoch 8 to 0.505015 even as validation loss rose after epoch
+2. The epoch-8 checkpoint was selected by validation F1. Training took
+3,888.39 seconds. Test token macro F1 was 0.487260 (95% contract-bootstrap CI
+0.437947–0.505094), strict span micro F1 0.157905, and partial span micro F1
+0.318891. Its test audit found 3,866 span errors: 3,105 hallucinated (80.32%),
+379 boundary (9.80%), 254 missed (6.57%), and 128 wrong-category (3.31%).
+
+On the same 51 test contracts, paired bootstrap for cased-BERT seed 42 minus
+seed 43 was 0.018339 token macro F1 (95% interval 0.000761–0.037583,
+p=0.043956; 1,000 resamples). This is evidence about this single seed pair on
+this split only, not a reliable general estimate of seed variance. The test
+set remained descriptive and did not influence checkpoint selection.
 
 The full DeBERTa-v3 seed-42 run completed all 8 configured epochs on the
 408/51/51 contract split. The checkpoint was selected at epoch 8 by validation
@@ -119,9 +139,10 @@ metrics.
 
 An alternate seed-43 contract split has been prepared and integrity-checked:
 all 510 contract IDs are present, 153 assignments differ from the original,
-and sizes are 407/51/52 (train/validation/test). No model has yet been trained
-or evaluated on that split, so it does not change the single-split limitation
-of the reported model comparisons.
+and sizes are 407/51/52 (train/validation/test). A LegalBERT seed-42 run using
+that split is in progress with the same model settings as the original run.
+Until it completes and is scored, no alternate-split result is included in the
+tables and the single-split limitation still applies to completed comparisons.
 
 The original four seed-42 transformer result records include 128-word windows,
 32-word stride, and the 25% O-only retention setting. Their metadata does not

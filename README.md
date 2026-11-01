@@ -68,6 +68,7 @@ exploratory because the validation grid search can overfit.
 | CRF | 42 | 0.3058 | 0.3103 | 0.1035 | 0.3788 |
 | BiLSTM-CRF (100d random embeddings) | 42 | 0.3357 | 0.3351 | 0.1508 | 0.4236 |
 | BERT `bert-base-cased` | 42 | 0.5105 | 0.5076 | 0.1517 | 0.3306 |
+| BERT `bert-base-cased` | 43 | 0.5050 | 0.4873 | 0.1579 | 0.3189 |
 | BERT `bert-base-uncased` | 42 | 0.5120 | 0.4827 | 0.1577 | 0.3365 |
 | LegalBERT `nlpaueb/legal-bert-base-uncased` | 42 | 0.5387 | 0.5125 | 0.2044 | 0.4079 |
 | LegalBERT `nlpaueb/legal-bert-base-uncased` | 43 | **0.5631** | 0.5118 | 0.2072 | 0.3893 |
@@ -78,8 +79,8 @@ exploratory because the validation grid search can overfit.
 Model rows are from [`results/metrics.csv`](./results/metrics.csv); the
 validation-selected ensemble row is from
 [`results/ensemble_validation_selected.json`](./results/ensemble_validation_selected.json).
-Rows report individual seeds: LegalBERT has two runs; each other completed
-model has one. DeBERTa has the highest individual test token macro F1, while
+Rows report individual seeds: LegalBERT and cased BERT have two runs; each
+other completed model has one. DeBERTa has the highest individual test token macro F1, while
 LegalBERT seed 43 remains the best individual run by validation F1.
 Bootstrap intervals quantify test-contract resampling, not run-to-run training
 variation. The seed-42/43 paired LegalBERT comparison is in
@@ -88,6 +89,11 @@ its difference was not significant (p=0.8106). The ensemble result and its 95% t
 contract-bootstrap interval (0.4791–0.5571) are recorded separately in
 [`results/ensemble_validation_selected.json`](./results/ensemble_validation_selected.json).
 Its paired improvement over RoBERTa was not significant (p=0.1819).
+The paired cased BERT seed comparison is in
+[`results/paired_comparison_bert_cased_seed42_vs_seed43.json`](./results/paired_comparison_bert_cased_seed42_vs_seed43.json);
+seed 42 exceeded seed 43 by 0.0183 token macro F1 (paired 95% interval
+0.0008–0.0376, p=0.044). This is one seed pair on one split, not a stable
+estimate of run-to-run variance.
 Two validation-selected LegalBERT calibration experiments are recorded in
 [`results/exploratory_calibration.json`](./results/exploratory_calibration.json)
 and are excluded from the primary table: the scalar offset slightly raised
@@ -112,6 +118,7 @@ transformers mostly hallucinate spans.
 |---|---:|---:|---:|---:|
 | CRF | 0.1035 | 0.3788 | 837 | 79 |
 | BiLSTM-CRF | 0.1508 | 0.4236 | 634 | 294 |
+| BERT cased, seed 43 | 0.1579 | 0.3189 | 254 | 3,105 |
 | LegalBERT | 0.2044 | 0.4079 | 226 | 2,140 |
 | RoBERTa | 0.2018 | 0.3985 | 233 | 2,222 |
 | DeBERTa | 0.2166 | 0.4082 | 202 | 2,162 |
@@ -119,6 +126,7 @@ transformers mostly hallucinate spans.
 Counts are from the test audits in
 [`results/audit/crf_full_data/`](./results/audit/crf_full_data/),
 [`results/audit/bilstm_seed42/`](./results/audit/bilstm_seed42/),
+[`results/audit/bert_cased_seed43/`](./results/audit/bert_cased_seed43/),
 [`results/audit/legalbert_full_data/`](./results/audit/legalbert_full_data/),
 [`results/audit/roberta_full_data/`](./results/audit/roberta_full_data/), and
 [`results/audit/deberta_seed42/`](./results/audit/deberta_seed42/).
@@ -272,8 +280,8 @@ Expert-Annotated NLP Dataset for Legal Contract Review*. NeurIPS.
 The raw data, auditable cleaning, BIO/multi-label conversion, contract splits,
 windowing, dataset analysis, scoring utilities, baselines, prediction audits,
 and transformer/BiLSTM-CRF training code are implemented. All completed
-full-data models use one fixed contract split; LegalBERT has two completed
-seeds and each other completed model has one. The CRF reached its 100-iteration
+full-data models use one fixed contract split; LegalBERT and cased BERT have
+two completed seeds, and each other completed model has one. The CRF reached its 100-iteration
 cap without convergence. Three categories have fewer than five gold test
 spans. Duplicate screening uses approximate SimHash and cannot rule out
 partial boilerplate overlap. DeBERTa completed its eight-epoch seed-42 run;
@@ -281,6 +289,11 @@ the full BiLSTM-CRF seed-42 run completed eight epochs. It scored 0.3351 test
 token macro F1, 0.1508 strict span micro F1, and 0.4236 partial span micro F1;
 its test audit found 634 missed and 294 hallucinated spans. The best
 validation token macro F1 was 0.3357 at epoch 8.
+BERT cased seed 43 also completed eight epochs: test token macro F1 0.4873,
+strict span micro F1 0.1579, and partial span micro F1 0.3189. Its audit found
+3,105 hallucinated and 254 missed spans. A same-seed LegalBERT run on the
+verified alternate contract split is in progress; no alternate-split score is
+reported yet.
 Transformer validation loss rises after about epoch 2 while validation F1
 continues to improve;
 checkpoints are selected by validation token macro F1 (validation loss only

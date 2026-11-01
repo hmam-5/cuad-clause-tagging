@@ -224,6 +224,7 @@ def build():
         ("Feature CRF", "crf-full-seed42-test"),
         ("BiLSTM-CRF (100d random embeddings)", "bilstm-crf-seed42"),
         ("BERT cased", "bert-base-cased-full-seed42"),
+        ("BERT cased", "bert-base-cased-full-seed43"),
         ("BERT uncased", "bert-base-uncased-full-seed42"),
         ("LegalBERT seed 42", "nlpaueb_legal-bert-base-uncased-full-seed42"),
         ("LegalBERT seed 43", "nlpaueb_legal-bert-base-uncased-full-seed43"),
@@ -345,7 +346,8 @@ def build():
         slide,
         [
             "Completed: source acquisition, offset-safe preprocessing, split/window generation, analysis, baseline and neural benchmarks, scoring, and audits.",
-            "Current coverage: one fixed contract split for every model; LegalBERT has two seeds, and each other completed model has one.",
+            "Current coverage: one fixed contract split for every completed model; LegalBERT and cased BERT have two seeds, and other models have one.",
+            "A same-seed LegalBERT run on the verified alternate contract split is in progress; no result is reported yet.",
             "Known limitations: CRF did not converge by 100 iterations; three classes have fewer than five gold test spans; duplicate screening is approximate.",
             "Next: additional model seeds and at least one independently prepared contract split; report individual results, not pooled estimates.",
         ],

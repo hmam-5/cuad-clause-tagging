@@ -2,7 +2,7 @@
   "dataset_contracts": 510,
   "dataset_spans": 13823,
   "offset_roundtrip_agreement": 1.0,
-  "full_run_count": 10,
+  "full_run_count": 11,
   "model_aggregates": [
     {
       "model": "DeBERTa | microsoft/deberta-v3-base",
@@ -108,7 +108,7 @@
     },
     {
       "model": "BERT | bert-base-cased",
-      "seeds": 1,
+      "seeds": 2,
       "per_seed_results": [
         {
           "seed": 42,
@@ -119,6 +119,17 @@
           "bootstrap_95": [
             0.44894522527034525,
             0.531418230146846
+          ]
+        },
+        {
+          "seed": 43,
+          "token_macro_f1": 0.4872603891794074,
+          "strict_span_micro_f1": 0.1579048719430002,
+          "partial_span_micro_f1": 0.31889081455805895,
+          "training_minutes": 64.80650490166687,
+          "bootstrap_95": [
+            0.43794740861238907,
+            0.5050937861437708
           ]
         }
       ],
@@ -132,6 +143,10 @@
         [
           0.44894522527034525,
           0.531418230146846
+        ],
+        [
+          0.43794740861238907,
+          0.5050937861437708
         ]
       ]
     },
@@ -311,6 +326,19 @@
       "partial_span_macro_f1": 0.3108161251555901
     },
     {
+      "run_id": "bert-base-cased-full-seed43-validation",
+      "model": "BERT | bert-base-cased",
+      "token_macro_f1": 0.5050146822194433,
+      "bootstrap_95": [
+        0.435807662514239,
+        0.5346580670519494
+      ],
+      "strict_span_micro_f1": 0.15467196819085488,
+      "strict_span_macro_f1": 0.1260592024471544,
+      "partial_span_micro_f1": 0.3292246520874751,
+      "partial_span_macro_f1": 0.3079314058806033
+    },
+    {
       "run_id": "bert-base-uncased-full-seed42-validation",
       "model": "BERT | bert-base-uncased",
       "token_macro_f1": 0.512042194757764,
@@ -404,6 +432,7 @@
   },
   "loss_figure_runs": [
     "bert-base-cased-full-seed42",
+    "bert-base-cased-full-seed43",
     "bert-base-uncased-full-seed42",
     "bilstm-crf-seed42",
     "microsoft_deberta-v3-base-full-seed42",
@@ -424,6 +453,20 @@
         "seed": 42.0
       },
       "source_file": "paired_comparison.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
+      "first": "BERT | bert-base-cased",
+      "second": "BERT | bert-base-cased",
+      "paired_difference": {
+        "mean_difference": 0.018339483484102595,
+        "lower": 0.0007612631579167473,
+        "upper": 0.03758258441246204,
+        "two_sided_p": 0.04395604395604396,
+        "iterations": 1000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_bert_cased_seed42_vs_seed43.json",
       "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
     },
     {
