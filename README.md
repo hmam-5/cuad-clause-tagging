@@ -17,10 +17,9 @@ The project downloads the official Atticus Project release from its
 retained raw file is the original `CUADv1.json` from the official `data.zip`;
 the contexts contain the contract text and the QA-style character offsets.
 This source release does not provide a separate `full_contracts_txt` directory.
-The separate Zenodo archive is 105,883,672 bytes and is not included because it
-exceeds the project's 50 MiB per-file limit. CUAD is licensed CC BY 4.0; retain
-attribution to The Atticus Project and the CUAD paper authors. The project code
-is MIT licensed; these licenses are distinct.
+CUAD is licensed CC BY 4.0; retain attribution to The Atticus Project and the
+CUAD paper authors. The project code is MIT licensed; these licenses are
+distinct.
 
 The original raw JSON is about 40.1 MB, below 50 MiB. On the downloaded
 release, preprocessing found:
@@ -73,8 +72,11 @@ exploratory because the validation grid search can overfit.
 | RoBERTa `roberta-base` | 42 | 0.5223 | **0.5202** | 0.2018 | 0.3985 |
 | Weighted-vote ensemble (uncased BERT 1, LegalBERT 2, RoBERTa 2) | 42 per model | 0.5528 | **0.5342** | **0.2242** | **0.4423** |
 
-Values are from [`results/metrics.csv`](./results/metrics.csv). Rows report
-individual seeds: LegalBERT has two runs; each other trained model has one.
+Model rows are from [`results/metrics.csv`](./results/metrics.csv); the
+validation-selected ensemble row is from
+[`results/ensemble_validation_selected.json`](./results/ensemble_validation_selected.json).
+Rows report individual seeds: LegalBERT has two runs; each other trained model
+has one.
 Bootstrap intervals quantify test-contract resampling, not run-to-run training
 variation. The seed-42/43 paired LegalBERT comparison is in
 [`results/paired_comparison_legalbert_seed42_vs_seed43.json`](./results/paired_comparison_legalbert_seed42_vs_seed43.json);
@@ -117,9 +119,16 @@ python -m pip install -r requirements.txt
 python scripts/download_data.py
 python scripts/prepare_data.py
 python scripts/analyze_data.py
+python scripts/summarize_experiments.py
 python scripts/train_baselines.py --model o-only
 python -m unittest discover -s tests
 ```
+
+The first four commands download the official raw source, regenerate prepared
+data and descriptive analysis, and rebuild result tables from the recorded
+run JSON files and loss histories in `results/`. Reproducing model scores
+requires rerunning the corresponding training commands below; raw annotations
+alone do not determine trained model results.
 
 `python scripts/train_baselines.py --model most-frequent-word` runs the
 lexical baseline. The feature CRF is available as
@@ -243,20 +252,19 @@ artifacts/                      Ignored checkpoints, predictions, and run logs
 Hendrycks, D., Burns, C., Chen, A., and Ball, S. (2021). *CUAD: An
 Expert-Annotated NLP Dataset for Legal Contract Review*. NeurIPS.
 [Paper](https://arxiv.org/abs/2103.06268) ·
-[Dataset](https://zenodo.org/records/4595826) ·
-[Source repository](https://github.com/The-Atticus-Project/cuad).
+[Dataset and source repository](https://github.com/The-Atticus-Project/cuad).
 
 ## Project status and limitations
 
 The raw data, auditable cleaning, BIO/multi-label conversion, contract splits,
 windowing, dataset analysis, scoring utilities, baselines, prediction audits,
 and transformer/BiLSTM-CRF training code are implemented. All full-data models
-use one fixed contract split; LegalBERT has two completed seeds and the other
-models have one each. The CRF reached its
-100-iteration cap without convergence. Three categories have fewer than five
-gold test spans. Duplicate screening uses approximate SimHash and cannot rule
-out partial boilerplate overlap. DeBERTa's full run is incomplete; BiLSTM-CRF
-has not been run. Transformer validation loss rises after about epoch 2 while
+use one fixed contract split; LegalBERT has two completed seeds and each other
+model has one. The CRF reached its 100-iteration cap without convergence.
+Three categories have fewer than five gold test spans. Duplicate screening
+uses approximate SimHash and cannot rule out partial boilerplate overlap.
+DeBERTa's full run is incomplete; BiLSTM-CRF has not been run. Transformer
+validation loss rises after about epoch 2 while
 validation F1 continues to improve; checkpoints are selected by validation
 token macro F1 (validation loss only breaks ties). The four seed-42 transformer
 result records report 128-word windows and stride 32, but do not record a code

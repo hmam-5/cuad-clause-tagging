@@ -296,6 +296,16 @@ class PreprocessingIntegrationTests(unittest.TestCase):
 
 
 class ResultExportTests(unittest.TestCase):
+    def test_summary_import_is_optional_without_ignored_artifacts(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            self.assertEqual(
+                _import_full_transformer_results(
+                    root / "results", artifacts_dir=root / "missing-artifacts"
+                ),
+                [],
+            )
+
     def test_summary_retains_each_seed_score_separately(self) -> None:
         runs = [
             {

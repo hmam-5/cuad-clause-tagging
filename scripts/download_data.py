@@ -12,6 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
+DATASET_URL = "https://github.com/The-Atticus-Project/cuad"
 DATA_URL = "https://raw.githubusercontent.com/The-Atticus-Project/cuad/main/data.zip"
 MAX_FILE_BYTES = 50 * 1024 * 1024
 
@@ -75,6 +76,7 @@ def _write_raw_readme() -> None:
     readme = RAW_DIR / "README.md"
     readme.write_text(
         "# Raw CUAD data\n\n"
+        f"- Dataset project and official source: [{DATASET_URL}]({DATASET_URL})\n"
         f"- Source archive: [{DATA_URL}]({DATA_URL})\n"
         "- Extracted source file: `CUADv1.json` (SQuAD-style contract text and "
         "character-offset annotations)\n"

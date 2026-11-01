@@ -80,9 +80,16 @@ def _write_crf_category_analysis(
     results_dir: Path, stats: dict[str, Any]
 ) -> dict[str, Any] | None:
     metrics_path = ROOT / "artifacts" / "crf_full_data" / "test_metrics.json"
-    if not metrics_path.is_file():
-        return None
-    metrics = _read_json(metrics_path)
+    if metrics_path.is_file():
+        metrics = _read_json(metrics_path)
+        strict_scores = metrics["span"]["strict"]["per_category"]
+    else:
+        result_path = results_dir / "crf-full-seed42-test.json"
+        if not result_path.is_file():
+            return None
+        strict_scores = _read_json(result_path).get("span_strict_per_category")
+        if not isinstance(strict_scores, dict):
+            return None
     training_lengths: dict[str, list[int]] = {category: [] for category in CATEGORIES}
     with lzma.open(
         PROCESSED_DATA / "contracts.jsonl.xz", "rt", encoding="utf-8"
@@ -95,7 +102,6 @@ def _write_crf_category_analysis(
                 category = CATEGORIES[span[0]]
                 training_lengths[category].append(span[6] - span[5])
 
-    strict_scores = metrics["span"]["strict"]["per_category"]
     span_counts = stats["per_category_spans"]
     rows = []
     for category in CATEGORIES:
@@ -257,6 +263,7 @@ def _import_full_crf_results(results_dir: Path) -> list[dict[str, Any]]:
             ),
             "loss_curve": "",
             "per_category": metrics["token_per_category"],
+            "span_strict_per_category": metrics["span"]["strict"]["per_category"],
             "predictions_path": metrics["predictions_file"] if split == "test" else "",
             "final_iteration_loss": metadata["final_iteration_loss"],
             "final_iteration_error_norm": metadata["final_iteration_error_norm"],
@@ -288,6 +295,8 @@ def _import_full_transformer_results(
     results_dir: Path, artifacts_dir: Path | None = None
 ) -> list[dict[str, Any]]:
     artifacts_root = artifacts_dir or ROOT / "artifacts"
+    if not artifacts_root.is_dir():
+        return []
     candidates: dict[str, tuple[Path, dict[str, Any], dict[str, Any]]] = {}
     for run_dir in sorted(artifacts_root.iterdir()):
         if not run_dir.is_dir():

@@ -83,6 +83,13 @@ The DeBERTa full run is incomplete and has no test score; BiLSTM-CRF is
 implemented but has not been run as a full experiment. The tracked metrics
 and latest completion state are in `results/metrics.csv`,
 `results/findings_summary.md`, and the repository README.
+The four seed-42 transformer result records include 128-word windows,
+32-word stride, and the 25% O-only retention setting. Their metadata does not
+include a source revision or an explicit gold-independent evaluation-window
+flag, so the recorded run metadata cannot prove which code revision produced
+them. The evaluation-window fix is in commit `17b18e1`, which predates the
+recorded artifact directories; that chronology is corroboration, not a
+per-run code-version attestation.
 
 ## Metrics and uncertainty
 
