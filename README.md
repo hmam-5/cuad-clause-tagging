@@ -66,6 +66,7 @@ exploratory because the validation grid search can overfit.
 | Model / checkpoint | Seed | Validation token macro F1 | Test token macro F1 | Test strict span micro F1 | Test partial span micro F1 |
 |---|---:|---:|---:|---:|---:|
 | CRF | 42 | 0.3058 | 0.3103 | 0.1035 | 0.3788 |
+| BiLSTM-CRF (100d random embeddings) | 42 | 0.3357 | 0.3351 | 0.1508 | 0.4236 |
 | BERT `bert-base-cased` | 42 | 0.5105 | 0.5076 | 0.1517 | 0.3306 |
 | BERT `bert-base-uncased` | 42 | 0.5120 | 0.4827 | 0.1577 | 0.3365 |
 | LegalBERT `nlpaueb/legal-bert-base-uncased` | 42 | 0.5387 | 0.5125 | 0.2044 | 0.4079 |
@@ -104,18 +105,20 @@ for exact comparisons and timestamp limitations.
 The transformers and their ensemble have higher strict span micro F1 than the
 CRF, while the CRF's partial span score is closer to the individual
 LegalBERT/RoBERTa models than its strict score suggests. Test audits show
-different error profiles: the CRF mostly misses gold spans; the transformers
-mostly hallucinate spans.
+different error profiles: the CRF and BiLSTM-CRF mostly miss gold spans; the
+transformers mostly hallucinate spans.
 
 | Model | Strict span micro F1 | Partial span micro F1 | Missed spans | Hallucinated spans |
 |---|---:|---:|---:|---:|
 | CRF | 0.1035 | 0.3788 | 837 | 79 |
+| BiLSTM-CRF | 0.1508 | 0.4236 | 634 | 294 |
 | LegalBERT | 0.2044 | 0.4079 | 226 | 2,140 |
 | RoBERTa | 0.2018 | 0.3985 | 233 | 2,222 |
 | DeBERTa | 0.2166 | 0.4082 | 202 | 2,162 |
 
 Counts are from the test audits in
 [`results/audit/crf_full_data/`](./results/audit/crf_full_data/),
+[`results/audit/bilstm_seed42/`](./results/audit/bilstm_seed42/),
 [`results/audit/legalbert_full_data/`](./results/audit/legalbert_full_data/),
 [`results/audit/roberta_full_data/`](./results/audit/roberta_full_data/), and
 [`results/audit/deberta_seed42/`](./results/audit/deberta_seed42/).
@@ -239,7 +242,7 @@ scripts/download_data.py        Download CUAD source data and record provenance
 scripts/prepare_data.py         Validate spans and create processed contracts
 scripts/analyze_data.py         Summarize dataset distributions and export plots
 scripts/train_baselines.py      Train O-only, word-lookup, or CRF baselines
-scripts/train_bilstm_crf.py     Train the BiLSTM-CRF (implemented, not benchmarked)
+scripts/train_bilstm_crf.py     Train and evaluate the BiLSTM-CRF
 scripts/train_transformer.py    Fine-tune and evaluate transformer token classifiers
 scripts/compare_models.py       Compare prediction files with paired contract bootstrap
 scripts/audit_predictions.py    Audit span errors and screen for duplicate contracts
@@ -274,8 +277,12 @@ seeds and each other completed model has one. The CRF reached its 100-iteration
 cap without convergence. Three categories have fewer than five gold test
 spans. Duplicate screening uses approximate SimHash and cannot rule out
 partial boilerplate overlap. DeBERTa completed its eight-epoch seed-42 run;
-BiLSTM-CRF has not yet been run as a full experiment. Transformer validation
-loss rises after about epoch 2 while validation F1 continues to improve;
+the full BiLSTM-CRF seed-42 run completed eight epochs. It scored 0.3351 test
+token macro F1, 0.1508 strict span micro F1, and 0.4236 partial span micro F1;
+its test audit found 634 missed and 294 hallucinated spans. The best
+validation token macro F1 was 0.3357 at epoch 8.
+Transformer validation loss rises after about epoch 2 while validation F1
+continues to improve;
 checkpoints are selected by validation token macro F1 (validation loss only
 breaks ties). DeBERTa's test audit is still hallucination-heavy. The original
 four seed-42 transformer result records report 128-word windows and stride 32,

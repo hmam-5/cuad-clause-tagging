@@ -2,7 +2,7 @@
   "dataset_contracts": 510,
   "dataset_spans": 13823,
   "offset_roundtrip_agreement": 1.0,
-  "full_run_count": 9,
+  "full_run_count": 10,
   "model_aggregates": [
     {
       "model": "DeBERTa | microsoft/deberta-v3-base",
@@ -161,6 +161,35 @@
         [
           0.42874617269603227,
           0.5073036564732148
+        ]
+      ]
+    },
+    {
+      "model": "BiLSTM-CRF | random embeddings (100d)",
+      "seeds": 1,
+      "per_seed_results": [
+        {
+          "seed": 42,
+          "token_macro_f1": 0.3351110846866629,
+          "strict_span_micro_f1": 0.15084915084915085,
+          "partial_span_micro_f1": 0.4235764235764236,
+          "training_minutes": 54.30352989666668,
+          "bootstrap_95": [
+            0.2968047267842313,
+            0.351668025899773
+          ]
+        }
+      ],
+      "max_iterations": null,
+      "optimizer_converged": null,
+      "regularization": {
+        "c1": null,
+        "c2": null
+      },
+      "bootstrap_ci_per_run": [
+        [
+          0.2968047267842313,
+          0.351668025899773
         ]
       ]
     },
@@ -376,6 +405,7 @@
   "loss_figure_runs": [
     "bert-base-cased-full-seed42",
     "bert-base-uncased-full-seed42",
+    "bilstm-crf-seed42",
     "microsoft_deberta-v3-base-full-seed42",
     "nlpaueb_legal-bert-base-uncased-full-seed42",
     "nlpaueb_legal-bert-base-uncased-full-seed43",

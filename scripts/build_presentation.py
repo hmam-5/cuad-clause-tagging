@@ -98,7 +98,7 @@ def _load():
     stats = json.loads((ROOT / "data" / "processed" / "stats.json").read_text(encoding="utf-8"))
     with (RESULTS / "metrics.csv").open(encoding="utf-8-sig", newline="") as stream:
         metrics = list(csv.DictReader(stream))
-    return stats, {row["model"]: row for row in metrics}
+    return stats, {row["run_id"]: row for row in metrics}
 
 
 def _fmt(value, digits=3):
@@ -137,7 +137,7 @@ def build():
         5.85,
         11.0,
         0.65,
-        "Draft presentation: neural experiments and final model comparisons are pending.",
+        "Measured benchmarks are complete on one contract split; variance remains under study.",
         14,
         RGBColor(255, 207, 137),
         True,
@@ -217,26 +217,37 @@ def build():
         _textbox(slide, 1.75, y - 0.01, 3.0, 0.35, heading, 17, NAVY, True)
         _textbox(slide, 4.55, y, 7.4, 0.42, detail, 15, INK)
 
-    slide = _base_slide(prs, "Baselines establish a floor, not a conclusion", "Measured results")
-    crf = metrics.get("crf")
-    crf_row = (
-        (
-            "CRF smoke (10 train docs)",
-            _fmt(crf["token_macro_f1"]),
-            _fmt(crf["span_strict_micro_f1"]),
-            _fmt(crf["span_partial_micro_f1"]),
-        )
-        if crf
-        else ("CRF (not run)", "n/a", "n/a", "n/a")
-    )
-    rows = [
-        ("Model", "Token macro F1", "Strict span micro F1", "Partial span micro F1"),
-        ("All-O diagnostic", _fmt(metrics["o-only"]["token_macro_f1"]), _fmt(metrics["o-only"]["span_strict_micro_f1"]), _fmt(metrics["o-only"]["span_partial_micro_f1"])),
-        ("Most-frequent word", _fmt(metrics["most-frequent-word"]["token_macro_f1"]), _fmt(metrics["most-frequent-word"]["span_strict_micro_f1"]), _fmt(metrics["most-frequent-word"]["span_partial_micro_f1"])),
-        crf_row,
+    slide = _base_slide(prs, "Measured model results on the fixed test split", "Benchmark")
+    run_rows = [
+        ("O-only baseline", "o-only-seed42"),
+        ("Most-frequent word", "most-frequent-word-seed42"),
+        ("Feature CRF", "crf-full-seed42-test"),
+        ("BiLSTM-CRF (100d random embeddings)", "bilstm-crf-seed42"),
+        ("BERT cased", "bert-base-cased-full-seed42"),
+        ("BERT uncased", "bert-base-uncased-full-seed42"),
+        ("LegalBERT seed 42", "nlpaueb_legal-bert-base-uncased-full-seed42"),
+        ("LegalBERT seed 43", "nlpaueb_legal-bert-base-uncased-full-seed43"),
+        ("RoBERTa", "roberta-base-full-seed42"),
+        ("DeBERTa", "microsoft_deberta-v3-base-full-seed42"),
     ]
-    table = slide.shapes.add_table(len(rows), 4, Inches(0.75), Inches(1.7), Inches(11.85), Inches(2.6)).table
-    widths = [3.6, 2.45, 2.85, 2.95]
+    rows = [
+        ("Model", "Seed", "Token macro F1", "Strict span F1", "Partial span F1"),
+    ]
+    for label, run_id in run_rows:
+        result = metrics[run_id]
+        rows.append(
+            (
+                label,
+                result["seed"],
+                _fmt(result["token_macro_f1"]),
+                _fmt(result["span_strict_micro_f1"]),
+                _fmt(result["span_partial_micro_f1"]),
+            )
+        )
+    table = slide.shapes.add_table(
+        len(rows), 5, Inches(0.55), Inches(1.48), Inches(12.25), Inches(4.75)
+    ).table
+    widths = [4.25, 0.75, 2.3, 2.3, 2.65]
     for column, width in enumerate(widths):
         table.columns[column].width = Inches(width)
     for row_index, row in enumerate(rows):
@@ -250,19 +261,19 @@ def build():
             cell.vertical_anchor = MSO_ANCHOR.MIDDLE
             paragraph = cell.text_frame.paragraphs[0]
             paragraph.font.name = "Aptos"
-            paragraph.font.size = Pt(12 if row_index == 0 else 13)
+            paragraph.font.size = Pt(10 if row_index == 0 else 10.5)
             paragraph.font.bold = row_index == 0
             paragraph.font.color.rgb = WHITE if row_index == 0 else INK
     _bullets(
         slide,
         [
-            "The lexical baseline has nonzero partial overlap but zero exact-boundary span F1.",
-            "The CRF row is a smoke run on only 10 training contracts (268 seconds), not a full-data comparison.",
-            "No transformer or BiLSTM score is available yet; do not infer model feasibility from these rows.",
+            "DeBERTa seed 42 has the highest individual test token macro F1 (0.5402); LegalBERT seed 43 is a separate seed-specific result.",
+            "BiLSTM-CRF partial span F1 (0.4236) exceeds the individual transformer runs, despite lower token macro F1.",
+            "Bootstrap intervals measure test-contract resampling, not seed or split variance.",
         ],
-        y=4.65,
-        height=1.95,
-        size=15,
+        y=6.28,
+        height=0.75,
+        size=11,
     )
 
     slide = _base_slide(prs, "Evaluation rewards the right kind of correctness", "Evaluation")
@@ -329,18 +340,18 @@ def build():
         BLUE,
     )
 
-    slide = _base_slide(prs, "The project is ready for the main experiments", "Status & next steps")
+    slide = _base_slide(prs, "Measured results, with variance still to assess", "Status & limitations")
     _bullets(
         slide,
         [
-            "Complete: source acquisition, offset-safe preprocessing, split/window generation, dataset analysis, scoring, baselines, and audits.",
-            "Next: run BiLSTM-CRF and transformer checkpoints with suitable PyTorch hardware; repeat with at least three seeds.",
-            "Then: compare paired test predictions, review error categories, and finalize conclusions only after full runs.",
-            "Constraint: limited rare-category test support and expensive long-document training.",
+            "Completed: source acquisition, offset-safe preprocessing, split/window generation, analysis, baseline and neural benchmarks, scoring, and audits.",
+            "Current coverage: one fixed contract split for every model; LegalBERT has two seeds, and each other completed model has one.",
+            "Known limitations: CRF did not converge by 100 iterations; three classes have fewer than five gold test spans; duplicate screening is approximate.",
+            "Next: additional model seeds and at least one independently prepared contract split; report individual results, not pooled estimates.",
         ],
         y=1.75,
-        height=3.8,
-        size=18,
+        height=3.9,
+        size=17,
     )
     banner = slide.shapes.add_shape(
         MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.95), Inches(5.85), Inches(11.3), Inches(0.65)
@@ -348,7 +359,7 @@ def build():
     banner.fill.solid()
     banner.fill.fore_color.rgb = NAVY
     banner.line.fill.background()
-    _textbox(slide, 1.2, 5.98, 10.8, 0.3, "Current finding: data integrity is measured; model performance is still an open question.", 15, WHITE, True)
+    _textbox(slide, 1.2, 5.98, 10.8, 0.3, "Highest individual test token macro F1: DeBERTa seed 42 = 0.5402.", 15, WHITE, True)
 
     slide = _base_slide(prs, "Takeaway: trustworthy evaluation starts with trustworthy labels", "Conclusion")
     _bullets(
@@ -357,7 +368,7 @@ def build():
             "CUAD offers 510 contracts, 41 clause categories, and 13,823 answer spans.",
             "Every original answer offset matched; contract-level splits and offset-preserving transformations support reproducibility.",
             "The dataset is highly imbalanced and overlapping, so exact spans, partial spans, and uncertainty all matter.",
-            "The baseline results are diagnostic only. Neural comparisons remain to be run.",
+            "DeBERTa leads individual token macro F1; the ensemble leads strict and partial span F1 in this single-split benchmark.",
         ],
         y=1.65,
         height=3.5,
@@ -373,7 +384,7 @@ def build():
         12,
         MUTED,
     )
-    _textbox(slide, 0.95, 6.52, 11.2, 0.3, "This is an NLP research artifact, not legal advice.", 12, ORANGE, True)
+    _textbox(slide, 0.95, 6.52, 11.2, 0.3,     "Single-seed and single-split coverage limits generalization claims; this is not legal advice.", 12, ORANGE, True)
 
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     prs.save(OUTPUT)

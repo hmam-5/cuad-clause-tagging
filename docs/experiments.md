@@ -72,16 +72,32 @@ macro F1 and raw versus canonical B-tag counts as an overfit diagnostic.
 ## Current benchmark status
 
 The completed full-data table contains seed-42 results for the CRF,
+BiLSTM-CRF,
 `bert-base-cased`, `bert-base-uncased`,
 `nlpaueb/legal-bert-base-uncased`, `roberta-base`, and DeBERTa, plus a second
 LegalBERT run with seed 43. Both LegalBERT results are reported as separate
 seed-specific rows, not combined into a mean or standard deviation. The
 validation-selected weighted-vote ensemble is a separate exploratory record.
 All completed runs use the same single contract-level split. The CRF reached
-its 100-iteration cap without convergence. BiLSTM-CRF remains implemented but
-has not yet been run as a full experiment. The tracked metrics and latest
-completion state are in `results/metrics.csv`,
+its 100-iteration cap without convergence. The full BiLSTM-CRF seed-42 run
+completed eight epochs; its selected checkpoint and test results are recorded
+in `results/bilstm-crf-seed42.json`, its loss history in
+`results/loss/bilstm-crf-seed42.csv`, and its audit in
+`results/audit/bilstm_seed42/`. The tracked metrics and latest completion state are in `results/metrics.csv`,
 `results/findings_summary.md`, and the repository README.
+
+The BiLSTM-CRF used 100-dimensional random embeddings, hidden size 128,
+batch size 16, AdamW at 1e-3, 25% O-only-window retention, and eight requested
+epochs on the 408/51/51 contract split. Its best validation token macro F1 was
+0.335704 at epoch 8. Training took 3,258.21 seconds. On the 51-contract test
+split it scored token macro F1 0.335111 (95% contract-bootstrap CI
+0.296805–0.351668), strict span micro/macro F1 0.150849/0.087415, and partial
+span micro/macro F1 0.423576/0.344502. The test audit found 1,314 span errors:
+634 missed (48.25%), 294 hallucinated (22.37%), 239 boundary (18.19%), and
+147 wrong-category (11.19%). These results are descriptive and were not used
+for checkpoint selection. The BiLSTM-CRF has a lower token macro F1 than the
+transformers but higher partial span micro F1 than each individual transformer
+run; it does not resolve the CRF's missed-span tendency.
 
 The full DeBERTa-v3 seed-42 run completed all 8 configured epochs on the
 408/51/51 contract split. The checkpoint was selected at epoch 8 by validation
