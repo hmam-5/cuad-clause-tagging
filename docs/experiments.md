@@ -95,9 +95,10 @@ and latest completion state are in `results/metrics.csv`,
 
 The bootstrap uses the fixed seed in the command and reports the number of
 iterations. Run three seeds (five if compute permits) for each main model;
-report mean and standard deviation across seeds alongside test-contract
-bootstrap intervals. Do not select hyperparameters on the test set. The
-training scripts select checkpoints using validation token macro F1.
+report each seed's scores separately alongside its test-contract bootstrap
+interval. Do not collapse a small number of runs into a mean and standard
+deviation. Do not select hyperparameters on the test set. The training scripts
+select checkpoints using validation token macro F1.
 
 `scripts/compare_models.py` compares paired predictions on identical test
 contracts and reports a two-sided paired-bootstrap p-value and confidence

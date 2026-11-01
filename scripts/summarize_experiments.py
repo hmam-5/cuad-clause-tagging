@@ -1,4 +1,4 @@
-"""Aggregate measured runs and create the Stage 6 report and figures."""
+"""Summarize measured runs by individual seed and create result figures."""
 
 from __future__ import annotations
 
@@ -24,8 +24,21 @@ def _read_json(path: Path) -> dict[str, Any]:
         return json.load(source)
 
 
-def _std(values: list[float]) -> float:
-    return statistics.stdev(values) if len(values) > 1 else 0.0
+def _per_seed_results(group: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    return [
+        {
+            "seed": int(run["seed"]),
+            "token_macro_f1": float(run["token_macro_f1"]),
+            "strict_span_micro_f1": float(run["span_strict_micro_f1"]),
+            "partial_span_micro_f1": float(run["span_partial_micro_f1"]),
+            "training_minutes": float(run["train_seconds"]) / 60,
+            "bootstrap_95": [
+                float(run["bootstrap_95_lower"]),
+                float(run["bootstrap_95_upper"]),
+            ],
+        }
+        for run in sorted(group, key=lambda item: int(item["seed"]))
+    ]
 
 
 def _average_ranks(values: list[float]) -> list[float]:
@@ -596,20 +609,7 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
         row: dict[str, Any] = {
             "model": name,
             "seeds": len(group),
-            "token_macro_f1_mean": statistics.mean(
-                float(run["token_macro_f1"]) for run in group
-            ),
-            "token_macro_f1_sd": _std([float(run["token_macro_f1"]) for run in group]),
-            "strict_span_micro_f1_mean": statistics.mean(
-                float(run["span_strict_micro_f1"]) for run in group
-            ),
-            "partial_span_micro_f1_mean": statistics.mean(
-                float(run["span_partial_micro_f1"]) for run in group
-            ),
-            "training_minutes_mean": statistics.mean(
-                float(run["train_seconds"]) for run in group
-            )
-            / 60,
+            "per_seed_results": _per_seed_results(group),
             "max_iterations": group[0].get("max_iterations"),
             "optimizer_converged": group[0].get("optimizer_converged"),
             "regularization": {
@@ -622,7 +622,12 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
             ],
         }
         aggregates.append(row)
-    aggregates.sort(key=lambda row: row["token_macro_f1_mean"], reverse=True)
+    aggregates.sort(
+        key=lambda row: max(
+            result["token_macro_f1"] for result in row["per_seed_results"]
+        ),
+        reverse=True,
+    )
 
     best_group = None
     best_validation_run = None
@@ -757,18 +762,21 @@ def summarize(results_dir: Path = RESULTS) -> dict[str, Any]:
         "",
         "## Full-data test results (descriptive; not used for selection)",
         "",
-        "| Model | Seeds | Token macro F1 mean (SD) | Strict span micro F1 | Partial span micro F1 | Mean train minutes |",
+        "| Model | Seed | Token macro F1 (contract-bootstrap 95% CI) | Strict span micro F1 | Partial span micro F1 | Train minutes |",
         "|---|---:|---:|---:|---:|---:|",
     ]
     for row in aggregates:
         display_model = row["model"].replace("|", r"\|")
-        lines.append(
-            f"| {display_model} | {row['seeds']} | "
-            f"{row['token_macro_f1_mean']:.4f} ({row['token_macro_f1_sd']:.4f}) | "
-            f"{row['strict_span_micro_f1_mean']:.4f} | "
-            f"{row['partial_span_micro_f1_mean']:.4f} | "
-            f"{row['training_minutes_mean']:.2f} |"
-        )
+        for index, result in enumerate(row["per_seed_results"]):
+            ci = result["bootstrap_95"]
+            lines.append(
+                f"| {display_model if index == 0 else ''} | {result['seed']} | "
+                f"{result['token_macro_f1']:.4f} "
+                f"({ci[0]:.4f}–{ci[1]:.4f}) | "
+                f"{result['strict_span_micro_f1']:.4f} | "
+                f"{result['partial_span_micro_f1']:.4f} | "
+                f"{result['training_minutes']:.2f} |"
+            )
     lines += ["", "## Validation results", ""]
     lines += [
         f"- **{run['model']}** ({run['run_id']}): token macro F1 "

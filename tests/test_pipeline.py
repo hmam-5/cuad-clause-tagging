@@ -14,6 +14,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from summarize_experiments import (
     _import_full_transformer_results,
+    _per_seed_results,
     _saved_paired_comparisons,
     _spearman,
     _write_loss_figure,
@@ -295,6 +296,50 @@ class PreprocessingIntegrationTests(unittest.TestCase):
 
 
 class ResultExportTests(unittest.TestCase):
+    def test_summary_retains_each_seed_score_separately(self) -> None:
+        runs = [
+            {
+                "seed": 43,
+                "token_macro_f1": 0.53,
+                "span_strict_micro_f1": 0.20,
+                "span_partial_micro_f1": 0.40,
+                "train_seconds": 3600,
+                "bootstrap_95_lower": 0.45,
+                "bootstrap_95_upper": 0.55,
+            },
+            {
+                "seed": 42,
+                "token_macro_f1": 0.51,
+                "span_strict_micro_f1": 0.19,
+                "span_partial_micro_f1": 0.39,
+                "train_seconds": 3000,
+                "bootstrap_95_lower": 0.44,
+                "bootstrap_95_upper": 0.54,
+            },
+        ]
+
+        self.assertEqual(
+            _per_seed_results(runs),
+            [
+                {
+                    "seed": 42,
+                    "token_macro_f1": 0.51,
+                    "strict_span_micro_f1": 0.19,
+                    "partial_span_micro_f1": 0.39,
+                    "training_minutes": 50,
+                    "bootstrap_95": [0.44, 0.54],
+                },
+                {
+                    "seed": 43,
+                    "token_macro_f1": 0.53,
+                    "strict_span_micro_f1": 0.2,
+                    "partial_span_micro_f1": 0.4,
+                    "training_minutes": 60,
+                    "bootstrap_95": [0.45, 0.55],
+                },
+            ],
+        )
+
     def test_summary_writes_scope_and_ignores_model_specific_details(self) -> None:
         result = {
             "run_id": "transformer-seed42",
