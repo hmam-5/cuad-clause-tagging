@@ -44,13 +44,14 @@ release, preprocessing found:
 
 Three categories have fewer than five test spans (`Most Favored Nation`,
 `Price Restrictions`, `Affiliate License-Licensor`); their test F1 will be
-uncertain. These are dataset/preprocessing counts, not model results. Run the
-majority baseline before making a go/no-go claim about task difficulty. The
-measured all-`O` baseline has 0.0000 token macro F1 and 0.0000 strict-span micro
-F1. The most-frequent-word baseline has 0.0084 token macro F1 (contract
+uncertain. These are dataset/preprocessing counts, not model results. The
+measured all-`O` baseline has 0.0000 token macro F1 and 0.0000 strict-span
+micro F1. The most-frequent-word baseline has 0.0084 token macro F1 (contract
 bootstrap 95% CI 0.0067–0.0096), 0.0000 strict-span micro F1, and 0.1110
 partial-span macro F1. The severe class imbalance and scarce categories make
 macro-F1 and per-class span evaluation more informative than accuracy alone.
+Plain token accuracy can exceed 90% because 88.89% of tokens are `O`; it is
+therefore not a suitable headline measure of clause extraction quality.
 
 ## Full-data results
 
@@ -90,6 +91,11 @@ and are excluded from the primary table: the scalar offset slightly raised
 test token macro F1 but reduced both span scores, while the 41-parameter
 per-category calibration did not improve test token macro F1. Test results
 were descriptive and were not used for calibration selection.
+The four seed-42 transformer checkpoints were re-evaluated with the current
+gold-independent test-window code. Uncased BERT matched all three reported
+scores exactly; the other runs had only small metric differences. The original
+table values were retained. See the [verification record](./docs/experiments.md#post-hoc-fixed-window-verification)
+for exact comparisons and timestamp limitations.
 
 ### CRF and transformer span behavior
 
