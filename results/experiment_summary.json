@@ -2,7 +2,7 @@
   "dataset_contracts": 510,
   "dataset_spans": 13823,
   "offset_roundtrip_agreement": 1.0,
-  "full_run_count": 11,
+  "full_run_count": 12,
   "model_aggregates": [
     {
       "model": "DeBERTa | microsoft/deberta-v3-base",
@@ -152,7 +152,7 @@
     },
     {
       "model": "BERT | bert-base-uncased",
-      "seeds": 1,
+      "seeds": 2,
       "per_seed_results": [
         {
           "seed": 42,
@@ -163,6 +163,17 @@
           "bootstrap_95": [
             0.42874617269603227,
             0.5073036564732148
+          ]
+        },
+        {
+          "seed": 43,
+          "token_macro_f1": 0.48731604887068053,
+          "strict_span_micro_f1": 0.15281150756585093,
+          "partial_span_micro_f1": 0.319447039043527,
+          "training_minutes": 64.71620698166662,
+          "bootstrap_95": [
+            0.4351885013357933,
+            0.5128176580995479
           ]
         }
       ],
@@ -176,6 +187,10 @@
         [
           0.42874617269603227,
           0.5073036564732148
+        ],
+        [
+          0.4351885013357933,
+          0.5128176580995479
         ]
       ]
     },
@@ -352,6 +367,19 @@
       "partial_span_macro_f1": 0.33745641522728154
     },
     {
+      "run_id": "bert-base-uncased-full-seed43-validation",
+      "model": "BERT | bert-base-uncased",
+      "token_macro_f1": 0.5318140357656214,
+      "bootstrap_95": [
+        0.47297509944203625,
+        0.5603070914502977
+      ],
+      "strict_span_micro_f1": 0.15466231381350745,
+      "strict_span_macro_f1": 0.122784112000808,
+      "partial_span_micro_f1": 0.33993062640277494,
+      "partial_span_macro_f1": 0.33413539789871693
+    },
+    {
       "run_id": "crf-full-seed42-validation",
       "model": "linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite",
       "token_macro_f1": 0.30576471998129917,
@@ -434,6 +462,7 @@
     "bert-base-cased-full-seed42",
     "bert-base-cased-full-seed43",
     "bert-base-uncased-full-seed42",
+    "bert-base-uncased-full-seed43",
     "bilstm-crf-seed42",
     "microsoft_deberta-v3-base-full-seed42",
     "nlpaueb_legal-bert-base-uncased-full-seed42",
@@ -481,6 +510,20 @@
         "seed": 42.0
       },
       "source_file": "paired_comparison_bert_cased_vs_uncased.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
+      "first": "BERT | bert-base-uncased",
+      "second": "BERT | bert-base-uncased",
+      "paired_difference": {
+        "mean_difference": -0.003849493865252128,
+        "lower": -0.01796769033924628,
+        "upper": 0.013082247562792582,
+        "two_sided_p": 0.5894105894105894,
+        "iterations": 1000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_bert_uncased_seed42_vs_seed43.json",
       "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
     },
     {

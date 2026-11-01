@@ -75,8 +75,8 @@ The completed full-data table contains seed-42 results for the CRF,
 BiLSTM-CRF,
 `bert-base-cased`, `bert-base-uncased`,
 `nlpaueb/legal-bert-base-uncased`, `roberta-base`, and DeBERTa, plus a second
-LegalBERT run with seed 43 and a second cased-BERT run with seed 43. Both
-seed pairs are reported as separate rows, not combined into a mean or standard
+LegalBERT run and seed-43 runs for cased and uncased BERT. All seed-specific
+scores are reported as separate rows, not combined into a mean or standard
 deviation. The
 validation-selected weighted-vote ensemble is a separate exploratory record.
 Most completed model runs use the original contract-level split. One
@@ -89,6 +89,7 @@ in `results/bilstm-crf-seed42.json`, its loss history in
 `results/loss/bilstm-crf-seed42.csv`, and its audit in
 `results/audit/bilstm_seed42/`. The tracked metrics and latest completion state are in `results/metrics.csv`,
 `results/findings_summary.md`, and the repository README.
+An additional RoBERTa seed-43 run is in progress; no score is available yet.
 
 The BiLSTM-CRF used 100-dimensional random embeddings, hidden size 128,
 batch size 16, AdamW at 1e-3, 25% O-only-window retention, and eight requested
@@ -119,6 +120,20 @@ seed 43 was 0.018339 token macro F1 (95% interval 0.000761–0.037583,
 p=0.043956; 1,000 resamples). This is evidence about this single seed pair on
 this split only, not a reliable general estimate of seed variance. The test
 set remained descriptive and did not influence checkpoint selection.
+
+The uncased BERT seed-43 run used the same 408/51/51 split and the same
+eight-epoch settings as seed 42. Its best validation token macro F1 was
+0.531814 at epoch 7; training took 3,882.97 seconds. Test token macro F1 was
+0.487316 (95% contract-bootstrap CI 0.435189–0.512818), strict span micro F1
+0.152812, and partial span micro F1 0.319447. The test audit found 3,988 span
+errors: 3,226 hallucinated (80.89%), 417 boundary (10.46%), 215 missed (5.39%),
+and 130 wrong-category (3.26%).
+
+Paired bootstrap for uncased-BERT seed 42 minus seed 43 on the same 51 test
+contracts was -0.003849 token macro F1 (95% interval -0.017968–0.013082,
+p=0.589411; 1,000 resamples), providing no evidence of a difference in this
+pair. Both seed comparisons are limited to this one split and should not be
+treated as general estimates of run-to-run variance.
 
 The full DeBERTa-v3 seed-42 run completed all 8 configured epochs on the
 408/51/51 contract split. The checkpoint was selected at epoch 8 by validation

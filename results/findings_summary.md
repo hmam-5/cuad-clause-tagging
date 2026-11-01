@@ -16,6 +16,7 @@
 | BERT \| bert-base-cased | 42 | 0.5076 (0.4489–0.5314) | 0.1517 | 0.3306 | 64.46 |
 |  | 43 | 0.4873 (0.4379–0.5051) | 0.1579 | 0.3189 | 64.81 |
 | BERT \| bert-base-uncased | 42 | 0.4827 (0.4287–0.5073) | 0.1577 | 0.3365 | 64.54 |
+|  | 43 | 0.4873 (0.4352–0.5128) | 0.1528 | 0.3194 | 64.72 |
 | BiLSTM-CRF \| random embeddings (100d) | 42 | 0.3351 (0.2968–0.3517) | 0.1508 | 0.4236 | 54.30 |
 | linear-chain CRF \| crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite | 42 | 0.3103 (0.2615–0.3333) | 0.1035 | 0.3788 | 209.83 |
 | word lookup \| none | 42 | 0.0084 (0.0067–0.0096) | 0.0000 | 0.1695 | 0.02 |
@@ -26,6 +27,7 @@
 - **BERT | bert-base-cased** (bert-base-cased-full-seed42-validation): token macro F1 0.5105; strict span micro F1 0.1470; partial span micro F1 0.3193.
 - **BERT | bert-base-cased** (bert-base-cased-full-seed43-validation): token macro F1 0.5050; strict span micro F1 0.1547; partial span micro F1 0.3292.
 - **BERT | bert-base-uncased** (bert-base-uncased-full-seed42-validation): token macro F1 0.5120; strict span micro F1 0.1630; partial span micro F1 0.3351.
+- **BERT | bert-base-uncased** (bert-base-uncased-full-seed43-validation): token macro F1 0.5318; strict span micro F1 0.1547; partial span micro F1 0.3399.
 - **linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite** (crf-full-seed42-validation): token macro F1 0.3058; strict span micro F1 0.1124; partial span micro F1 0.3702.
 - **DeBERTa | microsoft/deberta-v3-base** (microsoft_deberta-v3-base-full-seed42-validation): token macro F1 0.5328; strict span micro F1 0.2056; partial span micro F1 0.3890.
 - **BERT | nlpaueb/legal-bert-base-uncased** (nlpaueb_legal-bert-base-uncased-full-seed42-validation): token macro F1 0.5387; strict span micro F1 0.2093; partial span micro F1 0.4196.
