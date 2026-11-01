@@ -1,0 +1,8 @@
+\begin{tabular}{llllrrrrrrr}
+\toprule
+Architecture & Checkpoint & Training contracts (scope) & Split & Token macro F1 (95\% CI) & Strict span micro F1 & Strict span macro F1 & Partial span micro F1 & Train time (s) & Inference (ms/contract) & Iterations (converged) \\
+\midrule
+BERT & nlpaueb/legal-bert-base-uncased & 407/52 (full) & test & 0.5383 (0.4749--0.5612) & 0.2257 & 0.1671 & 0.4281 & 3877.3 & 758.7 &  (n/a) \\
+BERT & nlpaueb/legal-bert-base-uncased & 407/51 (full) & validation & 0.5391 (0.4763--0.5693) & 0.2029 & 0.1671 & 0.4136 & 3877.3 & 0.0 &  (n/a) \\
+\bottomrule
+\end{tabular}

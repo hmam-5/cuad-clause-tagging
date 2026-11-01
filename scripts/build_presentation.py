@@ -277,6 +277,51 @@ def build():
         size=11,
     )
 
+    slide = _base_slide(
+        prs, "A second split provides an initial sensitivity check", "Split variance"
+    )
+    _card(
+        slide,
+        0.9,
+        1.8,
+        3.55,
+        "TEST TOKEN MACRO F1",
+        "0.5383",
+        "LegalBERT seed 42",
+        BLUE,
+    )
+    _card(
+        slide,
+        4.9,
+        1.8,
+        3.55,
+        "STRICT SPAN MICRO F1",
+        "0.2257",
+        "52 alternate-split test contracts",
+        TEAL,
+    )
+    _card(
+        slide,
+        8.9,
+        1.8,
+        3.55,
+        "PARTIAL SPAN MICRO F1",
+        "0.4281",
+        "95% token-macro CI: 0.4749–0.5612",
+        ORANGE,
+    )
+    _bullets(
+        slide,
+        [
+            "The alternate contract split contains 407 train, 51 validation, and 52 test contracts; 153 of 510 assignments differ from the original split.",
+            "This is a separate split-specific result, not a paired comparison: both training and test contracts differ.",
+            "One model on one alternate split is an initial sensitivity check, not a general estimate of split variance.",
+        ],
+        y=3.85,
+        height=2.5,
+        size=17,
+    )
+
     slide = _base_slide(prs, "Evaluation rewards the right kind of correctness", "Evaluation")
     _card(slide, 0.9, 1.85, 3.55, "TOKEN MACRO F1", "41 classes", "outside class excluded", BLUE)
     _card(slide, 4.9, 1.85, 3.55, "STRICT SPAN F1", "Exact match", "category + both boundaries", TEAL)
@@ -346,8 +391,8 @@ def build():
         slide,
         [
             "Completed: source acquisition, offset-safe preprocessing, split/window generation, analysis, baseline and neural benchmarks, scoring, and audits.",
-            "Current coverage: one fixed contract split for every completed model; LegalBERT and cased BERT have two seeds, and other models have one.",
-            "A same-seed LegalBERT run on the verified alternate contract split is in progress; no result is reported yet.",
+            "Current coverage: most model runs use the original split; one LegalBERT seed-42 run uses an alternate split.",
+            "LegalBERT and cased BERT have two seeds; other completed models have one.",
             "Known limitations: CRF did not converge by 100 iterations; three classes have fewer than five gold test spans; duplicate screening is approximate.",
             "Next: additional model seeds and at least one independently prepared contract split; report individual results, not pooled estimates.",
         ],

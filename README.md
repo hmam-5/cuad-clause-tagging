@@ -106,6 +106,19 @@ scores exactly; the other runs had only small metric differences. The original
 table values were retained. See the [verification record](./docs/experiments.md#post-hoc-fixed-window-verification)
 for exact comparisons and timestamp limitations.
 
+### Alternate contract split
+
+One LegalBERT seed-42 run was evaluated on a separately prepared contract
+split (407/51/52 train/validation/test). It scored validation token macro F1
+0.5391 and test token macro F1 0.5383 (95% contract-bootstrap CI
+0.4749–0.5612), strict span micro F1 0.2257, and partial span micro F1 0.4281.
+The [complete run record](./results/alternate_split_seed43/nlpaueb_legal-bert-base-uncased-full-seed42.json)
+and [test audit](./results/alternate_split_seed43/audit/audit_summary.json)
+are kept separate from the original-split table. The test contracts differ,
+so this result is not a paired comparison with the original split and should
+not be read as a pure estimate of split variance. Recreate the split with
+`python scripts/prepare_data.py --seed 43 --output-dir artifacts/prepared-split-seed43/data`.
+
 ### CRF and transformer span behavior
 
 The transformers and their ensemble have higher strict span micro F1 than the
@@ -263,6 +276,7 @@ tests/                          Unit and integration tests
 contributions/                  Per-member contribution records and templates
 results/analysis/               Dataset analysis tables and plots
 results/audit/                  Test error and duplicate-screening audits
+results/alternate_split_seed43/ First alternate-split LegalBERT run and audit
 results/loss/                   Tracked transformer loss histories
 results/                         Tracked experiment metrics, summaries, comparisons, and plots
 artifacts/                      Ignored checkpoints, predictions, and run logs
@@ -279,9 +293,10 @@ Expert-Annotated NLP Dataset for Legal Contract Review*. NeurIPS.
 
 The raw data, auditable cleaning, BIO/multi-label conversion, contract splits,
 windowing, dataset analysis, scoring utilities, baselines, prediction audits,
-and transformer/BiLSTM-CRF training code are implemented. All completed
-full-data models use one fixed contract split; LegalBERT and cased BERT have
-two completed seeds, and each other completed model has one. The CRF reached its 100-iteration
+and transformer/BiLSTM-CRF training code are implemented. Most completed
+full-data runs use the original contract split; one LegalBERT seed-42 run
+provides an initial alternate-split measurement. LegalBERT and cased BERT
+have two completed seeds, and each other model has one. The CRF reached its 100-iteration
 cap without convergence. Three categories have fewer than five gold test
 spans. Duplicate screening uses approximate SimHash and cannot rule out
 partial boilerplate overlap. DeBERTa completed its eight-epoch seed-42 run;
@@ -291,9 +306,10 @@ its test audit found 634 missed and 294 hallucinated spans. The best
 validation token macro F1 was 0.3357 at epoch 8.
 BERT cased seed 43 also completed eight epochs: test token macro F1 0.4873,
 strict span micro F1 0.1579, and partial span micro F1 0.3189. Its audit found
-3,105 hallucinated and 254 missed spans. A same-seed LegalBERT run on the
-verified alternate contract split is in progress; no alternate-split score is
-reported yet.
+3,105 hallucinated and 254 missed spans. The alternate-split LegalBERT run
+completed with test token macro F1 0.5383, strict span micro F1 0.2257, and
+partial span micro F1 0.4281; this separate result is not pooled with the
+original split.
 Transformer validation loss rises after about epoch 2 while validation F1
 continues to improve;
 checkpoints are selected by validation token macro F1 (validation loss only
