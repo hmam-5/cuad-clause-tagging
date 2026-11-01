@@ -20,12 +20,17 @@ def main() -> None:
     parser.add_argument("--checkpoint", default="bert-base-cased")
     parser.add_argument("--seed", type=int, default=SEED)
     parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--batch-size", type=int, default=8)
+    parser.add_argument("--batch-size", type=int, default=2)
+    parser.add_argument("--gradient-accumulation-steps", type=int, default=8)
     parser.add_argument("--learning-rate", type=float, default=3e-5)
     parser.add_argument("--max-length", type=int, default=512)
     parser.add_argument("--window-words", type=int, default=128)
     parser.add_argument("--stride-words", type=int, default=32)
     parser.add_argument("--patience", type=int, default=2)
+    parser.add_argument("--o-only-fraction", type=float, default=0.25)
+    parser.add_argument(
+        "--mixed-precision", choices=("auto", "bf16", "fp16", "no"), default="auto"
+    )
     parser.add_argument("--max-train-contracts", type=int)
     parser.add_argument("--max-eval-contracts", type=int)
     parser.add_argument("--bootstrap-iterations", type=int, default=1000)
@@ -38,11 +43,14 @@ def main() -> None:
         seed=args.seed,
         epochs=args.epochs,
         batch_size=args.batch_size,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
         learning_rate=args.learning_rate,
         max_length=args.max_length,
         window_words=args.window_words,
         stride_words=args.stride_words,
         patience=args.patience,
+        o_only_fraction=args.o_only_fraction,
+        mixed_precision=args.mixed_precision,
         max_train_contracts=args.max_train_contracts,
         max_eval_contracts=args.max_eval_contracts,
         bootstrap_iterations=args.bootstrap_iterations,

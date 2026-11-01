@@ -232,6 +232,8 @@ def _write_summary(output_dir: Path, results: list[dict[str, Any]]) -> None:
         "git_commit_hash",
         "epochs",
         "learning_rate",
+        "best_epoch",
+        "effective_batch_size",
         "best_validation_macro_f1",
         "loss_curve",
     ]

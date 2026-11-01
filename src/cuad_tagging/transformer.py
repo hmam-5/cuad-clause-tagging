@@ -7,6 +7,7 @@ import json
 import lzma
 import random
 import time
+from contextlib import nullcontext
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -216,6 +217,85 @@ def _collate(samples: list[dict[str, Any]], pad_token_id: int) -> dict[str, Any]
     return batch
 
 
+def _encode_windows(
+    windows: list[Window],
+    records_by_id: dict[str, dict[str, Any]],
+    tokenizer: Any,
+    max_length: int,
+    batch_size: int = 32,
+) -> list[dict[str, Any]]:
+    samples: list[dict[str, Any]] = []
+    for offset in range(0, len(windows), batch_size):
+        samples.extend(
+            _encode_batch(
+                windows[offset : offset + batch_size],
+                records_by_id,
+                tokenizer,
+                max_length,
+            )
+        )
+    return samples
+
+
+def _subsample_o_only_windows(
+    windows: list[Window],
+    records_by_id: dict[str, dict[str, Any]],
+    fraction: float,
+    rng: random.Random,
+) -> tuple[list[Window], int, int]:
+    if not 0 <= fraction <= 1:
+        raise ValueError("--o-only-fraction must be between 0 and 1.")
+    labeled: list[Window] = []
+    outside: list[Window] = []
+    for window in windows:
+        labels = records_by_id[window.contract_id]["labels"][window.start : window.end]
+        (labeled if any(label_id != 0 for label_id in labels) else outside).append(window)
+    selected_outside = rng.sample(
+        outside, min(len(outside), round(len(outside) * fraction))
+    )
+    selected = set(labeled + selected_outside)
+    return (
+        [window for window in windows if window in selected],
+        len(labeled),
+        len(selected_outside),
+    )
+
+
+def _resolve_precision(mode: str, device: Any, torch: Any) -> Any | None:
+    if mode == "no":
+        return None
+    if mode == "auto":
+        if device.type != "cuda":
+            return None
+        mode = "bf16" if torch.cuda.is_bf16_supported() else "fp16"
+    if device.type != "cuda":
+        raise ValueError("Mixed precision is supported only on CUDA devices.")
+    if mode == "bf16":
+        if not torch.cuda.is_bf16_supported():
+            raise ValueError("The selected CUDA device does not support bf16.")
+        return torch.bfloat16
+    if mode == "fp16":
+        return torch.float16
+    raise ValueError(f"Unsupported mixed precision mode: {mode}")
+
+
+def _repair_bio_sequence(tags: list[str]) -> list[str]:
+    repaired: list[str] = []
+    active_category: str | None = None
+    for tag in tags:
+        if tag == "O":
+            repaired.append(tag)
+            active_category = None
+            continue
+        prefix, category = tag.split("-", 1)
+        if prefix == "B" or active_category != category:
+            repaired.append(f"B-{category}")
+        else:
+            repaired.append(f"I-{category}")
+        active_category = category
+    return repaired
+
+
 def _class_weights(records: list[dict[str, Any]], torch: Any, device: Any) -> Any:
     counts = np.zeros(len(BIO_LABELS), dtype=np.int64)
     for record in records:
@@ -230,24 +310,34 @@ def _class_weights(records: list[dict[str, Any]], torch: Any, device: Any) -> An
 
 def _run_epoch(
     model: Any,
-    windows: list[Window],
+    samples: list[dict[str, Any]],
     records_by_id: dict[str, dict[str, Any]],
-    tokenizer: Any,
-    max_length: int,
     batch_size: int,
+    pad_token_id: int,
     device: Any,
     weights: Any,
     optimizer: Any | None,
     rng: random.Random,
+    gradient_accumulation_steps: int = 1,
+    scheduler: Any | None = None,
+    scaler: Any | None = None,
+    autocast_dtype: Any | None = None,
 ) -> tuple[float, dict[str, Any] | None]:
     import torch
     from torch.nn import functional
 
+    if gradient_accumulation_steps < 1:
+        raise ValueError("Gradient accumulation steps must be positive.")
     training = optimizer is not None
     model.train(training)
-    order = list(range(len(windows)))
+    order = list(range(len(samples)))
     if training:
         rng.shuffle(order)
+        optimizer.zero_grad(set_to_none=True)
+    sample_token_counts = [
+        sum(label != -100 for label in sample["labels"]) for sample in samples
+    ]
+    total_batches = (len(order) + batch_size - 1) // batch_size
     loss_total = 0.0
     token_total = 0
     sums: dict[str, np.ndarray] = {}
@@ -255,34 +345,70 @@ def _run_epoch(
     gold_sequences: dict[str, list[str]] = {}
 
     for batch_start in range(0, len(order), batch_size):
-        selected = [windows[index] for index in order[batch_start : batch_start + batch_size]]
-        samples = _encode_batch(selected, records_by_id, tokenizer, max_length)
-        batch = _collate(samples, tokenizer.pad_token_id)
+        batch_number = batch_start // batch_size
+        selected = [samples[index] for index in order[batch_start : batch_start + batch_size]]
+        batch = _collate(selected, pad_token_id)
         labels = batch.pop("labels").to(device)
         model_inputs = {key: value.to(device) for key, value in batch.items()}
         with torch.set_grad_enabled(training):
-            logits = model(**model_inputs).logits
-            valid = labels != -100
-            loss_sum = functional.cross_entropy(
-                logits.reshape(-1, logits.shape[-1]),
-                labels.reshape(-1),
-                weight=weights,
-                ignore_index=-100,
-                reduction="sum",
+            autocast = (
+                nullcontext()
+                if autocast_dtype is None
+                else torch.autocast(device_type=device.type, dtype=autocast_dtype)
             )
-            token_count = int(valid.sum().item())
-            loss = loss_sum / max(token_count, 1)
+            with autocast:
+                logits = model(**model_inputs).logits
+                valid = labels != -100
+                loss_sum = functional.cross_entropy(
+                    logits.reshape(-1, logits.shape[-1]),
+                    labels.reshape(-1),
+                    weight=weights,
+                    ignore_index=-100,
+                    reduction="sum",
+                )
+                token_count = int(valid.sum().item())
             if training:
-                optimizer.zero_grad(set_to_none=True)
-                loss.backward()
-                torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-                optimizer.step()
+                group_start = (
+                    batch_number // gradient_accumulation_steps
+                ) * gradient_accumulation_steps
+                group_size = min(
+                    gradient_accumulation_steps, total_batches - group_start
+                )
+                group_end = min(
+                    len(order),
+                    (group_start + group_size) * batch_size,
+                )
+                group_token_count = sum(
+                    sample_token_counts[index]
+                    for index in order[group_start * batch_size : group_end]
+                )
+                scaled_loss = loss_sum / max(group_token_count, 1)
+                if scaler is None:
+                    scaled_loss.backward()
+                else:
+                    scaler.scale(scaled_loss).backward()
+                final_batch = batch_number + 1 == total_batches
+                if (
+                    (batch_number + 1) % gradient_accumulation_steps == 0
+                    or final_batch
+                ):
+                    if scaler is not None:
+                        scaler.unscale_(optimizer)
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+                    if scaler is None:
+                        optimizer.step()
+                    else:
+                        scaler.step(optimizer)
+                        scaler.update()
+                    optimizer.zero_grad(set_to_none=True)
+                    if scheduler is not None:
+                        scheduler.step()
         loss_total += float(loss_sum.detach().item())
         token_total += token_count
 
         if not training:
             logits_cpu = logits.detach().float().cpu().numpy()
-            for sample_index, sample in enumerate(samples):
+            for sample_index, sample in enumerate(selected):
                 contract_id = sample["contract_id"]
                 record = records_by_id[contract_id]
                 if contract_id not in sums:
@@ -303,6 +429,7 @@ def _run_epoch(
     average_loss = loss_total / max(token_total, 1)
     if training:
         return average_loss, None
+    raw_predicted: list[list[str]] = []
     predicted: list[list[str]] = []
     gold: list[list[str]] = []
     for contract_id in sorted(gold_sequences):
@@ -310,7 +437,10 @@ def _run_epoch(
         covered = vote_counts[contract_id] > 0
         predicted_ids = np.zeros(len(logits), dtype=np.int64)
         predicted_ids[covered] = logits[covered].argmax(axis=1)
-        predicted.append([BIO_LABELS[label_id] for label_id in predicted_ids])
+        raw_predicted.append([BIO_LABELS[label_id] for label_id in predicted_ids])
+        predicted.append(
+            _repair_bio_sequence(raw_predicted[-1])
+        )
         gold.append(gold_sequences[contract_id])
     return average_loss, {
         "gold": gold,
@@ -318,6 +448,12 @@ def _run_epoch(
         "contract_ids": sorted(gold_sequences),
         "token": token_metrics(gold, predicted),
         "span": span_metrics(gold, predicted),
+        "predicted_b_labels": sum(
+            label.startswith("B-") for sequence in predicted for label in sequence
+        ),
+        "raw_predicted_b_labels": sum(
+            label.startswith("B-") for sequence in raw_predicted for label in sequence
+        ),
     }
 
 
@@ -325,15 +461,30 @@ def _write_history(
     path: Path,
     history: list[dict[str, float]],
     loss_label: str = "Weighted cross-entropy loss",
+    best_epoch: int | None = None,
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("w", encoding="utf-8-sig", newline="") as output:
         writer = csv.DictWriter(
             output,
-            fieldnames=("epoch", "train_loss", "validation_loss", "validation_macro_f1"),
+            fieldnames=(
+                "epoch",
+                "train_loss",
+                "validation_loss",
+                "validation_macro_f1",
+                "train_macro_f1",
+                "learning_rate",
+                "elapsed_seconds",
+                "is_best_epoch",
+            ),
         )
         writer.writeheader()
-        writer.writerows(history)
+        writer.writerows(
+            [
+                {**row, "is_best_epoch": int(row["epoch"]) == best_epoch}
+                for row in history
+            ]
+        )
     try:
         import matplotlib
 
@@ -345,6 +496,8 @@ def _write_history(
     fig, axis = plt.subplots(figsize=(9, 5))
     axis.plot(epochs, [row["train_loss"] for row in history], label="Train")
     axis.plot(epochs, [row["validation_loss"] for row in history], label="Validation")
+    if best_epoch is not None:
+        axis.axvline(best_epoch, color="gray", linestyle="--", label="Best epoch")
     axis.set_xlabel("Epoch")
     axis.set_ylabel(loss_label)
     axis.set_title("Training and validation loss")
@@ -360,12 +513,15 @@ def train_transformer(
     checkpoint: str = "bert-base-cased",
     seed: int = SEED,
     epochs: int = 5,
-    batch_size: int = 8,
+    batch_size: int = 2,
+    gradient_accumulation_steps: int = 8,
     learning_rate: float = 3e-5,
     max_length: int = 512,
     window_words: int = 128,
     stride_words: int = 32,
     patience: int = 2,
+    o_only_fraction: float = 0.25,
+    mixed_precision: str = "auto",
     max_train_contracts: int | None = None,
     max_eval_contracts: int | None = None,
     bootstrap_iterations: int = 1000,
@@ -374,17 +530,25 @@ def train_transformer(
 ) -> dict[str, Any]:
     try:
         import torch
-        from transformers import AutoModelForTokenClassification, AutoTokenizer
+        from transformers import (
+            AutoModelForTokenClassification,
+            AutoTokenizer,
+            get_linear_schedule_with_warmup,
+        )
     except ImportError as error:
         raise RuntimeError(
             "Transformer training requires torch and transformers; install requirements.txt."
         ) from error
-    if epochs < 1 or batch_size < 1 or patience < 1:
-        raise ValueError("Epochs, batch size, and patience must be positive.")
+    if epochs < 1 or batch_size < 1 or gradient_accumulation_steps < 1 or patience < 1:
+        raise ValueError(
+            "Epochs, batch size, gradient accumulation, and patience must be positive."
+        )
     if max_length < 3:
         raise ValueError("--max-length must allow special tokens and at least one word.")
     if learning_rate <= 0:
         raise ValueError("--learning-rate must be positive.")
+    if not 0 <= o_only_fraction <= 1:
+        raise ValueError("--o-only-fraction must be between 0 and 1.")
     if max_train_contracts is not None and max_train_contracts < 1:
         raise ValueError("--max-train-contracts must be positive.")
     if max_eval_contracts is not None and max_eval_contracts < 1:
@@ -404,6 +568,14 @@ def train_transformer(
         if device_name == "auto"
         else device_name
     )
+    if device.type == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("CUDA was requested but is not available.")
+    precision_dtype = _resolve_precision(mixed_precision, device, torch)
+    scaler_enabled = precision_dtype == torch.float16 and device.type == "cuda"
+    if hasattr(torch, "amp") and hasattr(torch.amp, "GradScaler"):
+        scaler = torch.amp.GradScaler("cuda", enabled=scaler_enabled)
+    else:
+        scaler = torch.cuda.amp.GradScaler(enabled=scaler_enabled)
 
     records = load_records(data_path)
     train_records = [record for record in records if record["split"] == "train"]
@@ -451,8 +623,39 @@ def train_transformer(
     test_windows = _windows(
         test_records, window_words, stride_words, tokenizer, max_length
     )
+    train_windows, labeled_window_count, o_only_window_count = (
+        _subsample_o_only_windows(
+            train_windows,
+            records_by_id,
+            o_only_fraction,
+            random.Random(seed + 2),
+        )
+    )
+    if not train_windows:
+        raise ValueError("O-only subsampling left no training windows.")
+    train_samples = _encode_windows(
+        train_windows, records_by_id, tokenizer, max_length
+    )
+    validation_samples = _encode_windows(
+        validation_windows, records_by_id, tokenizer, max_length
+    )
+    test_samples = _encode_windows(test_windows, records_by_id, tokenizer, max_length)
     class_weights = _class_weights(train_records, torch, device)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate)
+    weight_decay = 0.01
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=learning_rate, weight_decay=weight_decay
+    )
+    train_batches = (len(train_samples) + batch_size - 1) // batch_size
+    updates_per_epoch = (
+        train_batches + gradient_accumulation_steps - 1
+    ) // gradient_accumulation_steps
+    total_updates = updates_per_epoch * epochs
+    warmup_steps = int(total_updates * 0.1)
+    scheduler = get_linear_schedule_with_warmup(
+        optimizer,
+        num_warmup_steps=warmup_steps,
+        num_training_steps=total_updates,
+    )
 
     architecture = (
         "RoBERTa"
@@ -461,39 +664,53 @@ def train_transformer(
         if "deberta" in checkpoint.lower()
         else "BERT"
     )
-    run_id = f"{checkpoint.replace('/', '_')}-seed{seed}"
-    checkpoint_dir = Path("artifacts") / "checkpoints" / run_id
+    run_scope = (
+        "smoke"
+        if max_train_contracts is not None or max_eval_contracts is not None
+        else "full"
+    )
+    run_id = f"{checkpoint.replace('/', '_')}-{run_scope}-seed{seed}"
+    checkpoint_dir = (
+        Path("artifacts") / "checkpoints" / f"{run_id}-{output_dir.name}"
+    )
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
     history: list[dict[str, float]] = []
     best_f1 = -1.0
+    best_validation_loss = float("inf")
+    best_epoch = 0
+    best_validation: dict[str, Any] | None = None
     epochs_without_improvement = 0
     epoch_rng = random.Random(seed)
     train_start = time.perf_counter()
 
     for epoch in range(1, epochs + 1):
+        epoch_start = time.perf_counter()
         train_loss, _ = _run_epoch(
             model,
-            train_windows,
+            train_samples,
             records_by_id,
-            tokenizer,
-            max_length,
             batch_size,
+            tokenizer.pad_token_id,
             device,
             class_weights,
             optimizer,
             epoch_rng,
+            gradient_accumulation_steps,
+            scheduler,
+            scaler,
+            precision_dtype,
         )
         validation_loss, validation = _run_epoch(
             model,
-            validation_windows,
+            validation_samples,
             records_by_id,
-            tokenizer,
-            max_length,
             batch_size,
+            tokenizer.pad_token_id,
             device,
             class_weights,
             None,
             epoch_rng,
+            autocast_dtype=precision_dtype,
         )
         validation_f1 = float(validation["token"]["macro_f1"])
         row = {
@@ -501,15 +718,46 @@ def train_transformer(
             "train_loss": train_loss,
             "validation_loss": validation_loss,
             "validation_macro_f1": validation_f1,
+            "learning_rate": float(scheduler.get_last_lr()[0]),
+            "elapsed_seconds": time.perf_counter() - epoch_start,
         }
+        train_result = None
+        if max_train_contracts is not None:
+            _, train_result = _run_epoch(
+                model,
+                train_samples,
+                records_by_id,
+                batch_size,
+                tokenizer.pad_token_id,
+                device,
+                class_weights,
+                None,
+                epoch_rng,
+                autocast_dtype=precision_dtype,
+            )
+            row["train_macro_f1"] = float(train_result["token"]["macro_f1"])
+        row["elapsed_seconds"] = time.perf_counter() - epoch_start
         history.append(row)
-        print(
+        progress = (
             f"epoch={epoch} train_loss={train_loss:.4f} "
             f"validation_loss={validation_loss:.4f} "
             f"validation_macro_f1={validation_f1:.4f}"
         )
-        if validation_f1 > best_f1:
+        if train_result is not None:
+            progress += (
+                f" train_macro_f1={row['train_macro_f1']:.4f}"
+                f" train_predicted_b_labels={train_result['predicted_b_labels']}"
+                f" train_raw_predicted_b_labels="
+                f"{train_result['raw_predicted_b_labels']}"
+            )
+        print(progress, flush=True)
+        if validation_f1 > best_f1 or (
+            validation_f1 == best_f1 and validation_loss < best_validation_loss
+        ):
             best_f1 = validation_f1
+            best_validation_loss = validation_loss
+            best_epoch = epoch
+            best_validation = validation
             epochs_without_improvement = 0
             model.save_pretrained(checkpoint_dir)
             tokenizer.save_pretrained(checkpoint_dir)
@@ -520,20 +768,20 @@ def train_transformer(
 
     train_seconds = time.perf_counter() - train_start
     loss_path = output_dir / "loss" / f"{run_id}.csv"
-    _write_history(loss_path, history)
+    _write_history(loss_path, history, best_epoch=best_epoch)
     model = AutoModelForTokenClassification.from_pretrained(checkpoint_dir).to(device)
     inference_start = time.perf_counter()
     _, test_result = _run_epoch(
         model,
-        test_windows,
+        test_samples,
         records_by_id,
-        tokenizer,
-        max_length,
         batch_size,
+        tokenizer.pad_token_id,
         device,
         class_weights,
         None,
         epoch_rng,
+        autocast_dtype=precision_dtype,
     )
     inference_seconds = time.perf_counter() - inference_start
     test_records = sorted(test_records, key=lambda record: record["contract_id"])
@@ -544,11 +792,25 @@ def train_transformer(
         "token": token_metrics(gold, predicted),
         "span": span_metrics(gold, predicted),
     }
+    if best_validation is None:
+        raise RuntimeError("Training completed without a best validation checkpoint.")
     from .metrics import bootstrap_macro_f1
 
     metrics["bootstrap_95"] = bootstrap_macro_f1(
         gold, predicted, bootstrap_iterations, seed
     )
+    validation_metrics = {
+        "token": best_validation["token"],
+        "span": best_validation["span"],
+        "bootstrap_95": bootstrap_macro_f1(
+            best_validation["gold"],
+            best_validation["predicted"],
+            bootstrap_iterations,
+            seed,
+        ),
+    }
+    training_scope = run_scope
+    evaluation_scope = "smoke" if max_eval_contracts is not None else "full"
     result = _save_run(
         architecture,
         seed,
@@ -564,21 +826,89 @@ def train_transformer(
         model_name=architecture,
         run_id=run_id,
         training_contracts=len(train_records),
-        training_scope=(
-            "smoke"
-            if max_train_contracts is not None or max_eval_contracts is not None
-            else "full"
-        ),
-        evaluation_scope="smoke" if max_eval_contracts is not None else "full",
+        training_scope=training_scope,
+        evaluation_scope=evaluation_scope,
     )
     result["best_validation_macro_f1"] = best_f1
+    result["best_epoch"] = best_epoch
+    result["epochs"] = len(history)
+    result["learning_rate"] = learning_rate
+    result["effective_batch_size"] = batch_size * gradient_accumulation_steps
     result["checkpoint_path"] = str(checkpoint_dir)
+    result["predictions_path"] = str(
+        output_dir / f"{run_id}_predictions.jsonl"
+    )
     result["loss_curve"] = str(loss_path)
+    result["validation_metrics"] = validation_metrics
+    result["training_hyperparameters"] = {
+        "epochs_requested": epochs,
+        "epochs_completed": len(history),
+        "batch_size": batch_size,
+        "gradient_accumulation_steps": gradient_accumulation_steps,
+        "effective_batch_size": batch_size * gradient_accumulation_steps,
+        "learning_rate": learning_rate,
+        "weight_decay": weight_decay,
+        "scheduler": "linear warmup then linear decay",
+        "warmup_fraction": 0.1,
+        "warmup_steps": warmup_steps,
+        "max_length": max_length,
+        "window_words": window_words,
+        "stride_words": stride_words,
+        "patience": patience,
+        "o_only_fraction": o_only_fraction,
+        "labeled_training_windows": labeled_window_count,
+        "retained_o_only_training_windows": o_only_window_count,
+        "mixed_precision": (
+            "bf16"
+            if precision_dtype == torch.bfloat16
+            else "fp16"
+            if precision_dtype == torch.float16
+            else "no"
+        ),
+        "class_weight_formula": "sqrt(total label count / label count), capped at 10 and mean-normalized",
+        "gradient_clip_norm": 1.0,
+    }
+    if max_train_contracts is not None and train_result is not None:
+        result["smoke_train_macro_f1"] = train_result["token"]["macro_f1"]
+        result["smoke_train_predicted_b_labels"] = train_result["predicted_b_labels"]
+        result["smoke_train_raw_predicted_b_labels"] = train_result[
+            "raw_predicted_b_labels"
+        ]
+    validation_record = {
+        **result,
+        "run_id": f"{run_id}-validation",
+        "evaluation_split": "validation",
+        "token_macro_f1": validation_metrics["token"]["macro_f1"],
+        "span_strict_micro_f1": validation_metrics["span"]["strict"]["micro_f1"],
+        "span_strict_macro_f1": validation_metrics["span"]["strict"]["macro_f1"],
+        "span_partial_micro_f1": validation_metrics["span"]["partial"]["micro_f1"],
+        "span_partial_macro_f1": validation_metrics["span"]["partial"]["macro_f1"],
+        "bootstrap_95_lower": validation_metrics["bootstrap_95"]["lower"],
+        "bootstrap_95_upper": validation_metrics["bootstrap_95"]["upper"],
+        "evaluation_contracts": len(best_validation["contract_ids"]),
+        "test_contracts": None,
+        "inference_ms_per_contract": None,
+        "predictions_path": None,
+    }
+    validation_path = output_dir / f"{run_id}-validation.json"
+    validation_path.write_text(
+        json.dumps(
+            {
+                **validation_record,
+                "per_category": validation_metrics["token"]["per_category"],
+            },
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    result["validation_metrics_file"] = str(validation_path)
     detail_path = output_dir / f"{run_id}.json"
     with detail_path.open(encoding="utf-8") as source:
         details = json.load(source)
     with detail_path.open("w", encoding="utf-8") as output:
         json.dump({**details, **result}, output, indent=2)
         output.write("\n")
-    _write_summary(output_dir, [result])
+    _write_summary(output_dir, [validation_record, result])
     return result

@@ -50,6 +50,20 @@ normalization. A fast tokenizer window that would truncate words fails loudly;
 adaptive subword-safe boundaries are applied before encoding rather than
 silently dropping tokens.
 
+Transformer training defaults to a physical batch size of 2 with 8 gradient
+accumulation steps (effective batch size 16), AdamW, a linear learning-rate
+schedule with 10% warmup, gradient clipping at 1.0, and automatic CUDA bf16 or
+fp16 when supported. All labeled windows are retained and 25% of O-only windows
+are sampled by default. Windows are tokenized once and cached before epochs.
+Checkpoint selection uses validation token macro F1, breaking ties by lower
+validation loss; the test split is evaluated once after loading the selected
+checkpoint. The loss CSV records
+training/validation loss, validation macro F1, learning rate, elapsed time, and
+the selected epoch. Transformer outputs canonicalize malformed BIO sequences:
+an `I-category` without an active same-category span becomes `B-category`,
+matching the span decoder's existing behavior. Smoke runs report training-set
+macro F1 and raw versus canonical B-tag counts as an overfit diagnostic.
+
 ## Metrics and uncertainty
 
 `src/cuad_tagging/metrics.py` implements:
@@ -95,4 +109,5 @@ python scripts/train_transformer.py --checkpoint microsoft/deberta-v3-base --see
 Repeat with seeds 43 and 44, then compare prediction files from the same
 contract-level test split. Loss history is CSV under `results/loss/`; transformer
 and BiLSTM-CRF scripts also produce loss figures. Checkpoints go to the
-Git-ignored `artifacts/checkpoints/`.
+Git-ignored `artifacts/checkpoints/`. To aggregate available loss histories into
+`results/figures/`, run `python scripts/plot_loss_curves.py`.

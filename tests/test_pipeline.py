@@ -1,6 +1,7 @@
 import csv
 import json
 import lzma
+import random
 import sys
 import tempfile
 import unittest
@@ -14,6 +15,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from summarize_experiments import _spearman
 
 from cuad_tagging.baselines import _write_summary
+from cuad_tagging.config import BIO_LABELS
 from cuad_tagging.metrics import (
     decode_bio,
     paired_bootstrap_difference,
@@ -28,7 +30,13 @@ from cuad_tagging.pipeline import (
     stratified_group_split,
     validate_annotations,
 )
-from cuad_tagging.transformer import _subword_windows
+from cuad_tagging.transformer import (
+    Window,
+    _collate,
+    _repair_bio_sequence,
+    _subsample_o_only_windows,
+    _subword_windows,
+)
 
 
 class TextAndOffsetTests(unittest.TestCase):
@@ -97,6 +105,50 @@ class LabelAndSplitTests(unittest.TestCase):
             )
         for previous, current in pairwise(windows):
             self.assertLessEqual(current["start"], previous["end"])
+
+    def test_o_only_subsampling_preserves_every_labeled_window(self) -> None:
+        windows = [
+            Window("contract", 0, 2),
+            Window("contract", 2, 4),
+            Window("contract", 4, 6),
+        ]
+        records = {"contract": {"labels": [0, 1, 0, 0, 0, 0]}}
+        selected, labeled_count, o_only_count = _subsample_o_only_windows(
+            windows, records, 0.0, random.Random(42)
+        )
+        self.assertEqual(selected, windows[:1])
+        self.assertEqual(labeled_count, 1)
+        self.assertEqual(o_only_count, 0)
+
+    def test_transformer_batches_keep_all_bio_labels_and_ignore_padding(self) -> None:
+        import torch
+
+        self.assertEqual(len(BIO_LABELS), 83)
+        batch = _collate(
+            [
+                {
+                    "inputs": {"input_ids": [101, 102], "attention_mask": [1, 1]},
+                    "labels": [0, 82],
+                },
+                {
+                    "inputs": {"input_ids": [103], "attention_mask": [1]},
+                    "labels": [1],
+                },
+            ],
+            pad_token_id=0,
+        )
+        self.assertEqual(batch["labels"].tolist(), [[0, 82], [1, -100]])
+        self.assertEqual(batch["input_ids"].tolist(), [[101, 102], [103, 0]])
+        self.assertEqual(batch["labels"].dtype, torch.long)
+
+    def test_transformer_repairs_malformed_bio_without_changing_decoded_spans(self) -> None:
+        raw = ["O", "I-License Grant", "I-License Grant", "O", "I-Parties"]
+        repaired = _repair_bio_sequence(raw)
+        self.assertEqual(
+            repaired,
+            ["O", "B-License Grant", "I-License Grant", "O", "B-Parties"],
+        )
+        self.assertEqual(decode_bio(raw), decode_bio(repaired))
 
     def test_contract_split_is_deterministic_and_grouped(self) -> None:
         labels = {
