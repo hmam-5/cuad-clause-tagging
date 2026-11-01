@@ -36,6 +36,7 @@ from cuad_tagging.transformer import (
     _repair_bio_sequence,
     _subsample_o_only_windows,
     _subword_windows,
+    _windows,
 )
 
 
@@ -149,6 +150,29 @@ class LabelAndSplitTests(unittest.TestCase):
             ["O", "B-License Grant", "I-License Grant", "O", "B-Parties"],
         )
         self.assertEqual(decode_bio(raw), decode_bio(repaired))
+
+    def test_validation_window_boundaries_do_not_use_gold_bio_tags(self) -> None:
+        record = {
+            "contract_id": "contract",
+            "tokens": ["a", "b", "c", "d", "e", "f"],
+            "labels": [
+                0,
+                BIO_LABELS.index("B-License Grant"),
+                BIO_LABELS.index("I-License Grant"),
+                BIO_LABELS.index("I-License Grant"),
+                BIO_LABELS.index("I-License Grant"),
+                0,
+            ],
+        }
+        gold_boundaries = _windows([record], max_words=3, stride_words=0)
+        blind_boundaries = _windows(
+            [record], max_words=3, stride_words=0, use_gold_boundaries=False
+        )
+        self.assertNotEqual(gold_boundaries, blind_boundaries)
+        self.assertEqual(
+            blind_boundaries,
+            [Window("contract", 0, 3), Window("contract", 3, 6)],
+        )
 
     def test_contract_split_is_deterministic_and_grouped(self) -> None:
         labels = {

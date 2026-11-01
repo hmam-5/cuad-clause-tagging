@@ -44,7 +44,9 @@ subword logits are averaged when stitching a token's repeated predictions.
 Windows are bounded by both the configured word count and the tokenizer's
 subword-piece budget, so a word that expands into many pieces cannot silently
 truncate neighboring tokens. A span is kept intact where its full tokenized
-length fits; exceptionally long spans can still cross windows.
+length fits during training; exceptionally long spans can still cross windows.
+Validation and test window boundaries depend only on tokens and subword lengths,
+not on gold BIO tags.
 Class weights use inverse-square-root train frequencies, capped at 10 before
 normalization. A fast tokenizer window that would truncate words fails loudly;
 adaptive subword-safe boundaries are applied before encoding rather than

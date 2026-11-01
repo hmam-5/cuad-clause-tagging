@@ -51,12 +51,17 @@ def _windows(
     stride_words: int,
     tokenizer: Any | None = None,
     max_length: int = 512,
+    use_gold_boundaries: bool = True,
 ) -> list[Window]:
     if max_words < 1 or stride_words < 0 or stride_words >= max_words:
         raise ValueError("Require max_words > stride_words >= 0.")
     windows: list[Window] = []
     for record in records:
-        tags = [BIO_LABELS[label_id] for label_id in record["labels"]]
+        tags = (
+            [BIO_LABELS[label_id] for label_id in record["labels"]]
+            if use_gold_boundaries
+            else ["O"] * len(record["tokens"])
+        )
         if tokenizer is None:
             boundaries = make_windows(tags, max_words, stride_words)
         else:
@@ -643,10 +648,20 @@ def train_transformer(
         train_records, window_words, stride_words, tokenizer, max_length
     )
     validation_windows = _windows(
-        validation_records, window_words, stride_words, tokenizer, max_length
+        validation_records,
+        window_words,
+        stride_words,
+        tokenizer,
+        max_length,
+        use_gold_boundaries=False,
     )
     test_windows = _windows(
-        test_records, window_words, stride_words, tokenizer, max_length
+        test_records,
+        window_words,
+        stride_words,
+        tokenizer,
+        max_length,
+        use_gold_boundaries=False,
     )
     print(
         f"window counts train={len(train_windows)} "
