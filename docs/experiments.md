@@ -86,10 +86,46 @@ and latest completion state are in `results/metrics.csv`,
 The four seed-42 transformer result records include 128-word windows,
 32-word stride, and the 25% O-only retention setting. Their metadata does not
 include a source revision or an explicit gold-independent evaluation-window
-flag, so the recorded run metadata cannot prove which code revision produced
-them. The evaluation-window fix is in commit `17b18e1`, which predates the
-recorded artifact directories; that chronology is corroboration, not a
-per-run code-version attestation.
+flag. Their historical metadata therefore cannot by itself attest to the
+evaluation code used in the original run; the post-hoc verification below
+re-evaluates the saved checkpoints with the fixed code.
+
+### Post-hoc fixed-window verification
+
+On 2026-11-01, each available seed-42 best checkpoint was loaded for
+inference-only scoring on the same 51 test contracts using the current
+gold-independent evaluation windows in `src/cuad_tagging/transformer.py`.
+Inference used CUDA bf16 and did not invoke training or change the recorded
+results in `results/metrics.csv`. Values below show recorded -> re-evaluated
+with the signed difference (re-evaluated minus recorded).
+
+| Model | Token macro F1 | Strict span micro F1 | Partial span micro F1 |
+|---|---|---|---|
+| BERT `bert-base-cased` | 0.507604 -> 0.507618 (+0.000014) | 0.151697 -> 0.151697 (0) | 0.330553 -> 0.330553 (0) |
+| BERT `bert-base-uncased` | 0.482711 -> 0.482711 (0) | 0.157749 -> 0.157749 (0) | 0.336504 -> 0.336504 (0) |
+| LegalBERT `nlpaueb/legal-bert-base-uncased` | 0.512516 -> 0.512521 (+0.000004) | 0.204417 -> 0.204417 (0) | 0.407895 -> 0.407895 (0) |
+| RoBERTa `roberta-base` | 0.520201 -> 0.520236 (+0.000035) | 0.201801 -> 0.202174 (+0.000373) | 0.398522 -> 0.399260 (+0.000737) |
+
+The uncased BERT scores are identical. The cased BERT and LegalBERT span
+scores are identical, but their token macro F1 differs slightly; RoBERTa
+differs on all three scores. These are reported as differences, not as
+identical results, and the recorded scores have not been replaced.
+
+The window-fix commit `17b18e1` was created at 2026-11-01 03:25:52 +03
+(00:25:52 UTC). The selected checkpoint and run-record modification times
+below are UTC; all are later than the fix commit. This supports, but cannot
+prove, which source revision generated each run. A dedicated log for the
+selected cased retry and logs for the other three selected runs were not
+retained. The older cased logs show a pre-fix run (00:23:29/00:24:03 UTC)
+and a separate partial leak-fix run (00:26:28/01:03:07 UTC), not the selected
+retry listed here.
+
+| Model | Selected run-record mtime (UTC) | Best checkpoint `model.safetensors` mtime (UTC) |
+|---|---|---|
+| BERT `bert-base-cased` | 2026-11-01 02:24:17 | 2026-11-01 02:23:31 |
+| BERT `bert-base-uncased` | 2026-11-01 03:36:03 | 2026-11-01 03:35:17 |
+| LegalBERT `nlpaueb/legal-bert-base-uncased` | 2026-11-01 04:50:37 | 2026-11-01 04:41:47 |
+| RoBERTa `roberta-base` | 2026-11-01 06:00:31 | 2026-11-01 05:59:45 |
 
 ## Metrics and uncertainty
 
