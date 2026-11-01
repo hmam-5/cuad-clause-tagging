@@ -9,6 +9,7 @@
 
 | Model | Seed | Token macro F1 (contract-bootstrap 95% CI) | Strict span micro F1 | Partial span micro F1 | Train minutes |
 |---|---:|---:|---:|---:|---:|
+| DeBERTa \| microsoft/deberta-v3-base | 42 | 0.5402 (0.4798–0.5646) | 0.2166 | 0.4082 | 140.00 |
 | RoBERTa \| roberta-base | 42 | 0.5202 (0.4651–0.5433) | 0.2018 | 0.3985 | 65.56 |
 | BERT \| nlpaueb/legal-bert-base-uncased | 42 | 0.5125 (0.4546–0.5387) | 0.2044 | 0.4079 | 64.53 |
 |  | 43 | 0.5118 (0.4597–0.5359) | 0.2072 | 0.3893 | 64.82 |
@@ -23,6 +24,7 @@
 - **BERT | bert-base-cased** (bert-base-cased-full-seed42-validation): token macro F1 0.5105; strict span micro F1 0.1470; partial span micro F1 0.3193.
 - **BERT | bert-base-uncased** (bert-base-uncased-full-seed42-validation): token macro F1 0.5120; strict span micro F1 0.1630; partial span micro F1 0.3351.
 - **linear-chain CRF | crf_seed42_c1-0.1_c2-0.1_iter100.crfsuite** (crf-full-seed42-validation): token macro F1 0.3058; strict span micro F1 0.1124; partial span micro F1 0.3702.
+- **DeBERTa | microsoft/deberta-v3-base** (microsoft_deberta-v3-base-full-seed42-validation): token macro F1 0.5328; strict span micro F1 0.2056; partial span micro F1 0.3890.
 - **BERT | nlpaueb/legal-bert-base-uncased** (nlpaueb_legal-bert-base-uncased-full-seed42-validation): token macro F1 0.5387; strict span micro F1 0.2093; partial span micro F1 0.4196.
 - **BERT | nlpaueb/legal-bert-base-uncased** (nlpaueb_legal-bert-base-uncased-full-seed43-validation): token macro F1 0.5631; strict span micro F1 0.2201; partial span micro F1 0.4116.
 - **RoBERTa | roberta-base** (roberta-base-full-seed42-validation): token macro F1 0.5223; strict span micro F1 0.2073; partial span micro F1 0.4036.

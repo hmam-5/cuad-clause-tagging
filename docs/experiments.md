@@ -73,22 +73,48 @@ macro F1 and raw versus canonical B-tag counts as an overfit diagnostic.
 
 The completed full-data table contains seed-42 results for the CRF,
 `bert-base-cased`, `bert-base-uncased`,
-`nlpaueb/legal-bert-base-uncased`, and `roberta-base`, plus a second
+`nlpaueb/legal-bert-base-uncased`, `roberta-base`, and DeBERTa, plus a second
 LegalBERT run with seed 43. Both LegalBERT results are reported as separate
 seed-specific rows, not combined into a mean or standard deviation. The
 validation-selected weighted-vote ensemble is a separate exploratory record.
-All runs use the same single contract-level split. The CRF reached its
-100-iteration cap without convergence.
-The DeBERTa full run is incomplete and has no test score; BiLSTM-CRF is
-implemented but has not been run as a full experiment. The tracked metrics
-and latest completion state are in `results/metrics.csv`,
+All completed runs use the same single contract-level split. The CRF reached
+its 100-iteration cap without convergence. BiLSTM-CRF remains implemented but
+has not yet been run as a full experiment. The tracked metrics and latest
+completion state are in `results/metrics.csv`,
 `results/findings_summary.md`, and the repository README.
-The four seed-42 transformer result records include 128-word windows,
+
+The full DeBERTa-v3 seed-42 run completed all 8 configured epochs on the
+408/51/51 contract split. The checkpoint was selected at epoch 8 by validation
+token macro F1 (0.532786); training took 8,399.76 seconds. On the 51-contract
+test split it scored token macro F1 0.540219 (95% contract-bootstrap CI
+0.479802–0.564610), strict span micro/macro F1 0.216643/0.177191, and partial
+span micro/macro F1 0.408182/0.385561. Test metrics are descriptive and were
+not used for checkpoint selection. Training loss fell to 0.0361 while
+validation loss rose to 0.2758; validation F1 continued to improve, so the
+checkpoint rule remained validation-F1 based.
+
+The DeBERTa test audit found 2,867 span errors: 2,162 hallucinated (75.41%),
+386 boundary (13.46%), 202 missed (7.05%), and 117 wrong-category (4.08%).
+Thus, completing DeBERTa did not eliminate the transformer hallucination-heavy
+error profile. The validation-selected scalar non-O offset and per-category
+logit-bias experiments in `results/exploratory_calibration.json` did not
+improve both strict and partial span F1; they were not selected using test
+metrics.
+
+An alternate seed-43 contract split has been prepared and integrity-checked:
+all 510 contract IDs are present, 153 assignments differ from the original,
+and sizes are 407/51/52 (train/validation/test). No model has yet been trained
+or evaluated on that split, so it does not change the single-split limitation
+of the reported model comparisons.
+
+The original four seed-42 transformer result records include 128-word windows,
 32-word stride, and the 25% O-only retention setting. Their metadata does not
 include a source revision or an explicit gold-independent evaluation-window
 flag. Their historical metadata therefore cannot by itself attest to the
-evaluation code used in the original run; the post-hoc verification below
-re-evaluates the saved checkpoints with the fixed code.
+evaluation code used in those original runs; the post-hoc verification below
+re-evaluates their saved checkpoints with the fixed code. The new DeBERTa run
+used the current training/evaluation implementation and the same 128/32
+transformer window settings.
 
 ### Post-hoc fixed-window verification
 

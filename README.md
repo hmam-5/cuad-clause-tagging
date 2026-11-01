@@ -70,14 +70,16 @@ exploratory because the validation grid search can overfit.
 | BERT `bert-base-uncased` | 42 | 0.5120 | 0.4827 | 0.1577 | 0.3365 |
 | LegalBERT `nlpaueb/legal-bert-base-uncased` | 42 | 0.5387 | 0.5125 | 0.2044 | 0.4079 |
 | LegalBERT `nlpaueb/legal-bert-base-uncased` | 43 | **0.5631** | 0.5118 | 0.2072 | 0.3893 |
-| RoBERTa `roberta-base` | 42 | 0.5223 | **0.5202** | 0.2018 | 0.3985 |
-| Weighted-vote ensemble (uncased BERT 1, LegalBERT 2, RoBERTa 2) | 42 per model | 0.5528 | **0.5342** | **0.2242** | **0.4423** |
+| RoBERTa `roberta-base` | 42 | 0.5223 | 0.5202 | 0.2018 | 0.3985 |
+| DeBERTa `microsoft/deberta-v3-base` | 42 | 0.5328 | **0.5402** | 0.2166 | 0.4082 |
+| Weighted-vote ensemble (uncased BERT 1, LegalBERT 2, RoBERTa 2) | 42 per model | 0.5528 | 0.5342 | **0.2242** | **0.4423** |
 
 Model rows are from [`results/metrics.csv`](./results/metrics.csv); the
 validation-selected ensemble row is from
 [`results/ensemble_validation_selected.json`](./results/ensemble_validation_selected.json).
-Rows report individual seeds: LegalBERT has two runs; each other trained model
-has one.
+Rows report individual seeds: LegalBERT has two runs; each other completed
+model has one. DeBERTa has the highest individual test token macro F1, while
+LegalBERT seed 43 remains the best individual run by validation F1.
 Bootstrap intervals quantify test-contract resampling, not run-to-run training
 variation. The seed-42/43 paired LegalBERT comparison is in
 [`results/paired_comparison_legalbert_seed42_vs_seed43.json`](./results/paired_comparison_legalbert_seed42_vs_seed43.json);
@@ -110,11 +112,13 @@ mostly hallucinate spans.
 | CRF | 0.1035 | 0.3788 | 837 | 79 |
 | LegalBERT | 0.2044 | 0.4079 | 226 | 2,140 |
 | RoBERTa | 0.2018 | 0.3985 | 233 | 2,222 |
+| DeBERTa | 0.2166 | 0.4082 | 202 | 2,162 |
 
 Counts are from the test audits in
 [`results/audit/crf_full_data/`](./results/audit/crf_full_data/),
 [`results/audit/legalbert_full_data/`](./results/audit/legalbert_full_data/),
-and [`results/audit/roberta_full_data/`](./results/audit/roberta_full_data/).
+[`results/audit/roberta_full_data/`](./results/audit/roberta_full_data/), and
+[`results/audit/deberta_seed42/`](./results/audit/deberta_seed42/).
 
 ## Quick start
 
@@ -264,16 +268,18 @@ Expert-Annotated NLP Dataset for Legal Contract Review*. NeurIPS.
 
 The raw data, auditable cleaning, BIO/multi-label conversion, contract splits,
 windowing, dataset analysis, scoring utilities, baselines, prediction audits,
-and transformer/BiLSTM-CRF training code are implemented. All full-data models
-use one fixed contract split; LegalBERT has two completed seeds and each other
-model has one. The CRF reached its 100-iteration cap without convergence.
-Three categories have fewer than five gold test spans. Duplicate screening
-uses approximate SimHash and cannot rule out partial boilerplate overlap.
-DeBERTa's full run is incomplete; BiLSTM-CRF has not been run. Transformer
-validation loss rises after about epoch 2 while
-validation F1 continues to improve; checkpoints are selected by validation
-token macro F1 (validation loss only breaks ties). The four seed-42 transformer
-result records report 128-word windows and stride 32, but do not record a code
+and transformer/BiLSTM-CRF training code are implemented. All completed
+full-data models use one fixed contract split; LegalBERT has two completed
+seeds and each other completed model has one. The CRF reached its 100-iteration
+cap without convergence. Three categories have fewer than five gold test
+spans. Duplicate screening uses approximate SimHash and cannot rule out
+partial boilerplate overlap. DeBERTa completed its eight-epoch seed-42 run;
+BiLSTM-CRF has not yet been run as a full experiment. Transformer validation
+loss rises after about epoch 2 while validation F1 continues to improve;
+checkpoints are selected by validation token macro F1 (validation loss only
+breaks ties). DeBERTa's test audit is still hallucination-heavy. The original
+four seed-42 transformer result records report 128-word windows and stride 32,
+but do not record a code
 revision or evaluation-window-boundary flag. The fixed leakage-prevention code
 is present in commit `17b18e1`; historical run metadata alone cannot prove
 which source revision produced those outputs. The saved run directories were

@@ -7,6 +7,12 @@
     "missed_span": 910,
     "wrong_category": 77
   },
+  "error_shares": {
+    "boundary_error": 0.09288238263503282,
+    "hallucinated_span": 0.408884401817264,
+    "missed_span": 0.45936395759717313,
+    "wrong_category": 0.038869257950530034
+  },
   "total_span_errors": 1981,
   "sampled_errors": 30,
   "sampled_error_counts": {

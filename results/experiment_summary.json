@@ -2,8 +2,37 @@
   "dataset_contracts": 510,
   "dataset_spans": 13823,
   "offset_roundtrip_agreement": 1.0,
-  "full_run_count": 8,
+  "full_run_count": 9,
   "model_aggregates": [
+    {
+      "model": "DeBERTa | microsoft/deberta-v3-base",
+      "seeds": 1,
+      "per_seed_results": [
+        {
+          "seed": 42,
+          "token_macro_f1": 0.5402188461611369,
+          "strict_span_micro_f1": 0.21664342166434217,
+          "partial_span_micro_f1": 0.4081822408182241,
+          "training_minutes": 139.99607255166677,
+          "bootstrap_95": [
+            0.47980239502790806,
+            0.5646095284587436
+          ]
+        }
+      ],
+      "max_iterations": null,
+      "optimizer_converged": null,
+      "regularization": {
+        "c1": null,
+        "c2": null
+      },
+      "bootstrap_ci_per_run": [
+        [
+          0.47980239502790806,
+          0.5646095284587436
+        ]
+      ]
+    },
     {
       "model": "RoBERTa | roberta-base",
       "seeds": 1,
@@ -173,7 +202,7 @@
           "token_macro_f1": 0.008414998502659529,
           "strict_span_micro_f1": 0.0,
           "partial_span_micro_f1": 0.1694915254237288,
-          "training_minutes": 0.023536593333362058,
+          "training_minutes": 0.022612623333164567,
           "bootstrap_95": [
             0.006734406330952683,
             0.009645447389722688
@@ -202,7 +231,7 @@
           "token_macro_f1": 0.0,
           "strict_span_micro_f1": 0.0,
           "partial_span_micro_f1": 0.0,
-          "training_minutes": 1.3333313593951364e-08,
+          "training_minutes": 1.33334348599116e-08,
           "bootstrap_95": [
             0.0,
             0.0
@@ -279,6 +308,19 @@
       "partial_span_macro_f1": 0.3247193724713411
     },
     {
+      "run_id": "microsoft_deberta-v3-base-full-seed42-validation",
+      "model": "DeBERTa | microsoft/deberta-v3-base",
+      "token_macro_f1": 0.5327855157738083,
+      "bootstrap_95": [
+        0.476809571421223,
+        0.5631252360020242
+      ],
+      "strict_span_micro_f1": 0.2055568104811385,
+      "strict_span_macro_f1": 0.17105336804144267,
+      "partial_span_micro_f1": 0.3889767336796928,
+      "partial_span_macro_f1": 0.38858115968191476
+    },
+    {
       "run_id": "nlpaueb_legal-bert-base-uncased-full-seed42-validation",
       "model": "BERT | nlpaueb/legal-bert-base-uncased",
       "token_macro_f1": 0.5387444978038599,
@@ -334,6 +376,7 @@
   "loss_figure_runs": [
     "bert-base-cased-full-seed42",
     "bert-base-uncased-full-seed42",
+    "microsoft_deberta-v3-base-full-seed42",
     "nlpaueb_legal-bert-base-uncased-full-seed42",
     "nlpaueb_legal-bert-base-uncased-full-seed43",
     "roberta-base-full-seed42"

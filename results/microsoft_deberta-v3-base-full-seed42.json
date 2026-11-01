@@ -1,0 +1,300 @@
+{
+  "model": "DeBERTa",
+  "architecture": "DeBERTa",
+  "checkpoint": "microsoft/deberta-v3-base",
+  "seed": 42,
+  "token_macro_f1": 0.5402188461611369,
+  "span_strict_micro_f1": 0.21664342166434217,
+  "span_strict_macro_f1": 0.17719083772826372,
+  "span_partial_micro_f1": 0.4081822408182241,
+  "span_partial_macro_f1": 0.3855608457060875,
+  "bootstrap_95_lower": 0.47980239502790806,
+  "bootstrap_95_upper": 0.5646095284587436,
+  "bootstrap_iterations": 1000,
+  "train_seconds": 8399.764353100007,
+  "inference_ms_per_contract": 2097.1120549017774,
+  "training_contracts": 408,
+  "test_contracts": 51,
+  "training_scope": "full",
+  "evaluation_scope": "full",
+  "best_validation_macro_f1": 0.5327855157738083,
+  "best_epoch": 8,
+  "epochs": 8,
+  "learning_rate": 3e-05,
+  "effective_batch_size": 16,
+  "per_category": {
+    "Document Name": {
+      "precision": 0.40093240093240096,
+      "recall": 0.9052631578947369,
+      "f1": 0.555735056542811,
+      "support": 190.0
+    },
+    "Parties": {
+      "precision": 0.5738548636129697,
+      "recall": 0.7538877620013522,
+      "f1": 0.65166569257744,
+      "support": 1479.0
+    },
+    "Agreement Date": {
+      "precision": 0.18341708542713567,
+      "recall": 0.6822429906542056,
+      "f1": 0.28910891089108914,
+      "support": 107.0
+    },
+    "Effective Date": {
+      "precision": 0.4595635430038511,
+      "recall": 0.6183074265975821,
+      "f1": 0.5272459499263623,
+      "support": 579.0
+    },
+    "Expiration Date": {
+      "precision": 0.7202952029520295,
+      "recall": 0.6092384519350812,
+      "f1": 0.6601285086236051,
+      "support": 1602.0
+    },
+    "Renewal Term": {
+      "precision": 0.45588235294117646,
+      "recall": 0.6921850079744817,
+      "f1": 0.5497150094996833,
+      "support": 627.0
+    },
+    "Notice Period To Terminate Renewal": {
+      "precision": 0.8359788359788359,
+      "recall": 0.7337461300309598,
+      "f1": 0.7815333882934873,
+      "support": 646.0
+    },
+    "Governing Law": {
+      "precision": 0.937533948940793,
+      "recall": 0.9520132377275234,
+      "f1": 0.9447181171319102,
+      "support": 1813.0
+    },
+    "Most Favored Nation": {
+      "precision": 0.4611764705882353,
+      "recall": 0.7567567567567568,
+      "f1": 0.5730994152046784,
+      "support": 259.0
+    },
+    "Non-Compete": {
+      "precision": 0.4603559870550162,
+      "recall": 0.61248654467169,
+      "f1": 0.525635103926097,
+      "support": 929.0
+    },
+    "Exclusivity": {
+      "precision": 0.5971496437054632,
+      "recall": 0.7085682074408117,
+      "f1": 0.6481051817478732,
+      "support": 1774.0
+    },
+    "No-Solicit Of Customers": {
+      "precision": 0.4052631578947368,
+      "recall": 0.21813031161473087,
+      "f1": 0.283609576427256,
+      "support": 353.0
+    },
+    "Competitive Restriction Exception": {
+      "precision": 0.35480572597137017,
+      "recall": 0.21920404295641188,
+      "f1": 0.2709878953533776,
+      "support": 1583.0
+    },
+    "No-Solicit Of Employees": {
+      "precision": 0.8007761966364813,
+      "recall": 0.7439903846153846,
+      "f1": 0.7713395638629283,
+      "support": 832.0
+    },
+    "Non-Disparagement": {
+      "precision": 0.603359173126615,
+      "recall": 0.5744157441574416,
+      "f1": 0.5885318210459988,
+      "support": 813.0
+    },
+    "Termination For Convenience": {
+      "precision": 0.5278413424866514,
+      "recall": 0.7637969094922737,
+      "f1": 0.6242670275146595,
+      "support": 906.0
+    },
+    "Rofr/Rofo/Rofn": {
+      "precision": 0.7250593824228029,
+      "recall": 0.717602115780194,
+      "f1": 0.721311475409836,
+      "support": 3403.0
+    },
+    "Change Of Control": {
+      "precision": 0.5567190226876091,
+      "recall": 0.7517674783974863,
+      "f1": 0.6397058823529411,
+      "support": 1273.0
+    },
+    "Anti-Assignment": {
+      "precision": 0.7036931818181819,
+      "recall": 0.8393764825482887,
+      "f1": 0.765569463761397,
+      "support": 2951.0
+    },
+    "Revenue/Profit Sharing": {
+      "precision": 0.4555375909458367,
+      "recall": 0.336317517159057,
+      "f1": 0.38695278969957075,
+      "support": 3351.0
+    },
+    "Price Restrictions": {
+      "precision": 0.0941320293398533,
+      "recall": 0.228486646884273,
+      "f1": 0.13333333333333333,
+      "support": 337.0
+    },
+    "Minimum Commitment": {
+      "precision": 0.46767932489451475,
+      "recall": 0.3786036343762809,
+      "f1": 0.418453639383872,
+      "support": 7319.0
+    },
+    "Volume Restriction": {
+      "precision": 0.22077028885832187,
+      "recall": 0.512779552715655,
+      "f1": 0.30865384615384617,
+      "support": 1252.0
+    },
+    "Ip Ownership Assignment": {
+      "precision": 0.5949367088607594,
+      "recall": 0.6505966587112172,
+      "f1": 0.6215230278157774,
+      "support": 2095.0
+    },
+    "Joint Ip Ownership": {
+      "precision": 0.8252656434474617,
+      "recall": 0.4277845777233782,
+      "f1": 0.5634824667472793,
+      "support": 1634.0
+    },
+    "License Grant": {
+      "precision": 0.48241875332978157,
+      "recall": 0.5107163000564016,
+      "f1": 0.49616438356164383,
+      "support": 3546.0
+    },
+    "Non-Transferable License": {
+      "precision": 0.7935967302452316,
+      "recall": 0.6450719822812846,
+      "f1": 0.7116676847892486,
+      "support": 1806.0
+    },
+    "Affiliate License-Licensor": {
+      "precision": 0.03342428376534789,
+      "recall": 0.08207705192629816,
+      "f1": 0.047503635482307315,
+      "support": 597.0
+    },
+    "Affiliate License-Licensee": {
+      "precision": 0.6693333333333333,
+      "recall": 0.3541862652869238,
+      "f1": 0.46324207936019685,
+      "support": 2126.0
+    },
+    "Unlimited/All-You-Can-Eat-License": {
+      "precision": 0.25675675675675674,
+      "recall": 0.4978165938864629,
+      "f1": 0.3387815750371471,
+      "support": 229.0
+    },
+    "Irrevocable Or Perpetual License": {
+      "precision": 0.5828343313373253,
+      "recall": 0.7617391304347826,
+      "f1": 0.6603844704108556,
+      "support": 1150.0
+    },
+    "Source Code Escrow": {
+      "precision": 0.4492307692307692,
+      "recall": 0.5328467153284672,
+      "f1": 0.48747913188647746,
+      "support": 548.0
+    },
+    "Post-Termination Services": {
+      "precision": 0.3580464842600765,
+      "recall": 0.4925131525698098,
+      "f1": 0.4146507666098808,
+      "support": 2471.0
+    },
+    "Audit Rights": {
+      "precision": 0.5589553693237186,
+      "recall": 0.8229555236728838,
+      "f1": 0.6657381615598886,
+      "support": 3485.0
+    },
+    "Uncapped Liability": {
+      "precision": 0.7800436999271668,
+      "recall": 0.5920398009950248,
+      "f1": 0.6731615336266499,
+      "support": 1809.0
+    },
+    "Cap On Liability": {
+      "precision": 0.6508976916500427,
+      "recall": 0.6653073113894553,
+      "f1": 0.6580236243157591,
+      "support": 3433.0
+    },
+    "Liquidated Damages": {
+      "precision": 0.37962962962962965,
+      "recall": 0.6677524429967426,
+      "f1": 0.4840613931523023,
+      "support": 307.0
+    },
+    "Warranty Duration": {
+      "precision": 0.3383137673425827,
+      "recall": 0.5615589016829052,
+      "f1": 0.42224442224442227,
+      "support": 1129.0
+    },
+    "Insurance": {
+      "precision": 0.7813229571984436,
+      "recall": 0.899641577060932,
+      "f1": 0.8363182007496877,
+      "support": 2232.0
+    },
+    "Covenant Not To Sue": {
+      "precision": 0.6620164870006341,
+      "recall": 0.8345323741007195,
+      "f1": 0.7383309759547383,
+      "support": 1251.0
+    },
+    "Third Party Beneficiary": {
+      "precision": 0.453125,
+      "recall": 0.1695906432748538,
+      "f1": 0.24680851063829787,
+      "support": 342.0
+    }
+  },
+  "training_hyperparameters": {
+    "epochs_requested": 8,
+    "epochs_completed": 8,
+    "batch_size": 2,
+    "gradient_accumulation_steps": 8,
+    "effective_batch_size": 16,
+    "learning_rate": 3e-05,
+    "weight_decay": 0.01,
+    "scheduler": "linear warmup then linear decay",
+    "warmup_fraction": 0.1,
+    "warmup_steps": 980,
+    "max_length": 512,
+    "window_words": 128,
+    "stride_words": 32,
+    "patience": 2,
+    "o_only_fraction": 0.25,
+    "labeled_training_windows": 10409,
+    "retained_o_only_training_windows": 9177,
+    "mixed_precision": "bf16",
+    "class_weight_formula": "sqrt(total label count / label count), capped at 10 and mean-normalized",
+    "gradient_clip_norm": 1.0
+  },
+  "predictions_path": "C:\\Users\\hmam1\\OneDrive\\Desktop\\npl\\artifacts\\deberta-full-seed42-detached\\microsoft_deberta-v3-base-full-seed42_predictions.jsonl",
+  "run_id": "microsoft_deberta-v3-base-full-seed42",
+  "evaluation_split": "test",
+  "evaluation_contracts": 51,
+  "loss_curve": "loss/microsoft_deberta-v3-base-full-seed42.csv"
+}
