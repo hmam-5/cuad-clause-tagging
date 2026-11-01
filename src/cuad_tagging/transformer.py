@@ -223,6 +223,7 @@ def _encode_windows(
     tokenizer: Any,
     max_length: int,
     batch_size: int = 32,
+    split_name: str = "windows",
 ) -> list[dict[str, Any]]:
     samples: list[dict[str, Any]] = []
     for offset in range(0, len(windows), batch_size):
@@ -234,6 +235,12 @@ def _encode_windows(
                 max_length,
             )
         )
+        completed = min(offset + batch_size, len(windows))
+        if completed == batch_size or completed == len(windows) or completed % 8192 == 0:
+            print(
+                f"tokenized {split_name} windows={completed}/{len(windows)}",
+                flush=True,
+            )
     return samples
 
 
@@ -571,6 +578,18 @@ def train_transformer(
     if device.type == "cuda" and not torch.cuda.is_available():
         raise RuntimeError("CUDA was requested but is not available.")
     precision_dtype = _resolve_precision(mixed_precision, device, torch)
+    precision_name = (
+        "bf16"
+        if precision_dtype == torch.bfloat16
+        else "fp16"
+        if precision_dtype == torch.float16
+        else "no"
+    )
+    print(
+        f"device={device} mixed_precision={precision_name} "
+        f"batch_size={batch_size} accumulation_steps={gradient_accumulation_steps}",
+        flush=True,
+    )
     scaler_enabled = precision_dtype == torch.float16 and device.type == "cuda"
     if hasattr(torch, "amp") and hasattr(torch.amp, "GradScaler"):
         scaler = torch.amp.GradScaler("cuda", enabled=scaler_enabled)
@@ -599,6 +618,11 @@ def train_transformer(
     if not train_records or not validation_records or not test_records:
         raise ValueError("Train, validation, and test splits must all be non-empty.")
 
+    print(
+        f"loaded contracts train={len(train_records)} "
+        f"validation={len(validation_records)} test={len(test_records)}",
+        flush=True,
+    )
     tokenizer = AutoTokenizer.from_pretrained(checkpoint, use_fast=True)
     if not tokenizer.is_fast:
         raise ValueError("A fast tokenizer is required for subword-to-word alignment.")
@@ -614,6 +638,7 @@ def train_transformer(
         ignore_mismatched_sizes=True,
     ).to(device)
     records_by_id = {record["contract_id"]: record for record in records}
+    print("building subword-safe windows", flush=True)
     train_windows = _windows(
         train_records, window_words, stride_words, tokenizer, max_length
     )
@@ -622,6 +647,11 @@ def train_transformer(
     )
     test_windows = _windows(
         test_records, window_words, stride_words, tokenizer, max_length
+    )
+    print(
+        f"window counts train={len(train_windows)} "
+        f"validation={len(validation_windows)} test={len(test_windows)}",
+        flush=True,
     )
     train_windows, labeled_window_count, o_only_window_count = (
         _subsample_o_only_windows(
@@ -633,13 +663,33 @@ def train_transformer(
     )
     if not train_windows:
         raise ValueError("O-only subsampling left no training windows.")
+    print(
+        f"training windows labeled={labeled_window_count} "
+        f"retained_o_only={o_only_window_count}",
+        flush=True,
+    )
+    encoding_start = time.perf_counter()
     train_samples = _encode_windows(
-        train_windows, records_by_id, tokenizer, max_length
+        train_windows, records_by_id, tokenizer, max_length, split_name="train"
     )
     validation_samples = _encode_windows(
-        validation_windows, records_by_id, tokenizer, max_length
+        validation_windows,
+        records_by_id,
+        tokenizer,
+        max_length,
+        split_name="validation",
     )
-    test_samples = _encode_windows(test_windows, records_by_id, tokenizer, max_length)
+    test_samples = _encode_windows(
+        test_windows,
+        records_by_id,
+        tokenizer,
+        max_length,
+        split_name="test",
+    )
+    print(
+        f"tokenization cache ready seconds={time.perf_counter() - encoding_start:.1f}",
+        flush=True,
+    )
     class_weights = _class_weights(train_records, torch, device)
     weight_decay = 0.01
     optimizer = torch.optim.AdamW(
@@ -858,13 +908,7 @@ def train_transformer(
         "o_only_fraction": o_only_fraction,
         "labeled_training_windows": labeled_window_count,
         "retained_o_only_training_windows": o_only_window_count,
-        "mixed_precision": (
-            "bf16"
-            if precision_dtype == torch.bfloat16
-            else "fp16"
-            if precision_dtype == torch.float16
-            else "no"
-        ),
+        "mixed_precision": precision_name,
         "class_weight_formula": "sqrt(total label count / label count), capped at 10 and mean-normalized",
         "gradient_clip_norm": 1.0,
     }
