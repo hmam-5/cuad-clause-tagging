@@ -199,8 +199,11 @@ SimHash is approximate and does not rule out partial boilerplate overlap.
 ## Repository map
 
 ```text
+data/                           Source, processed data, and derived dataset assets
 data/raw/                       Downloaded source data and provenance
 data/processed/                 Compressed contracts, labels, splits, and preparation statistics
+scripts/                        Data, training, evaluation, and reporting entry points
+src/                            Python package sources
 src/cuad_tagging/               Configuration, preprocessing, metrics, baselines, and model trainers
 scripts/download_data.py        Download CUAD source data and record provenance
 scripts/prepare_data.py         Validate spans and create processed contracts
@@ -247,7 +250,10 @@ token macro F1 (validation loss only breaks ties). The four seed-42 transformer
 result records report 128-word windows and stride 32, but do not record a code
 revision or evaluation-window-boundary flag. The fixed leakage-prevention code
 is present in commit `17b18e1`; historical run metadata alone cannot prove
-which source revision produced those outputs. Loss curves show validation loss
+which source revision produced those outputs. The saved run directories were
+created after that fix commit, which corroborates—but does not replace—the
+missing per-run source revision. A second full LegalBERT seed is in progress
+and is excluded until it completes. Loss curves show validation loss
 rising after about epoch 2, while validation F1 often continues to improve
 through later epochs; checkpoint selection uses validation token macro F1.
 

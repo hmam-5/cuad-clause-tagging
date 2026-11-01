@@ -69,6 +69,19 @@ an `I-category` without an active same-category span becomes `B-category`,
 matching the span decoder's existing behavior. Smoke runs report training-set
 macro F1 and raw versus canonical B-tag counts as an overfit diagnostic.
 
+## Current benchmark status
+
+The completed full-data table contains seed-42 results for the CRF,
+`bert-base-cased`, `bert-base-uncased`,
+`nlpaueb/legal-bert-base-uncased`, and `roberta-base`. Each was evaluated on
+the same single contract-level split. LegalBERT seed 43 is currently being
+run; it is not a result until the full run and validation-selected test
+evaluation finish. The CRF reached its 100-iteration cap without convergence.
+The DeBERTa full run is incomplete and has no test score; BiLSTM-CRF is
+implemented but has not been run as a full experiment. The tracked metrics
+and latest completion state are in `results/metrics.csv`,
+`results/findings_summary.md`, and the repository README.
+
 ## Metrics and uncertainty
 
 `src/cuad_tagging/metrics.py` implements:
