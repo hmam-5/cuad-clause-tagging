@@ -58,8 +58,8 @@ macro-F1 and per-class span evaluation more informative than accuracy alone.
 The table reports full-data runs on the fixed 51-contract test split. Token
 macro F1 is the average across the 41 clause categories (the `O` label is
 excluded). Span micro F1 uses exact boundaries for strict scoring and any
-overlap for partial scoring. LegalBERT is the best single model by validation
-token macro F1. A separate ensemble uses weights selected on validation from
+overlap for partial scoring. LegalBERT seed 43 is the best single run by
+validation token macro F1. A separate ensemble uses weights selected on validation from
 80 combinations; the test set was not used for that selection. Its result is
 exploratory because the validation grid search can overfit.
 
@@ -68,16 +68,26 @@ exploratory because the validation grid search can overfit.
 | CRF | 42 | 0.3058 | 0.3103 | 0.1035 | 0.3788 |
 | BERT `bert-base-cased` | 42 | 0.5105 | 0.5076 | 0.1517 | 0.3306 |
 | BERT `bert-base-uncased` | 42 | 0.5120 | 0.4827 | 0.1577 | 0.3365 |
-| LegalBERT `nlpaueb/legal-bert-base-uncased` | 42 | **0.5387** | 0.5125 | **0.2044** | **0.4079** |
+| LegalBERT `nlpaueb/legal-bert-base-uncased` | 42 | 0.5387 | 0.5125 | 0.2044 | 0.4079 |
+| LegalBERT `nlpaueb/legal-bert-base-uncased` | 43 | **0.5631** | 0.5118 | 0.2072 | 0.3893 |
 | RoBERTa `roberta-base` | 42 | 0.5223 | **0.5202** | 0.2018 | 0.3985 |
 | Weighted-vote ensemble (uncased BERT 1, LegalBERT 2, RoBERTa 2) | 42 per model | 0.5528 | **0.5342** | **0.2242** | **0.4423** |
 
-Values are from [`results/metrics.csv`](./results/metrics.csv). Each listed
-model has one seed; bootstrap intervals quantify test-contract resampling,
-not run-to-run training variation. The ensemble result and its 95% test
+Values are from [`results/metrics.csv`](./results/metrics.csv). Rows report
+individual seeds: LegalBERT has two runs; each other trained model has one.
+Bootstrap intervals quantify test-contract resampling, not run-to-run training
+variation. The seed-42/43 paired LegalBERT comparison is in
+[`results/paired_comparison_legalbert_seed42_vs_seed43.json`](./results/paired_comparison_legalbert_seed42_vs_seed43.json);
+its difference was not significant (p=0.8106). The ensemble result and its 95% test
 contract-bootstrap interval (0.4791–0.5571) are recorded separately in
 [`results/ensemble_validation_selected.json`](./results/ensemble_validation_selected.json).
 Its paired improvement over RoBERTa was not significant (p=0.1819).
+Two validation-selected LegalBERT calibration experiments are recorded in
+[`results/exploratory_calibration.json`](./results/exploratory_calibration.json)
+and are excluded from the primary table: the scalar offset slightly raised
+test token macro F1 but reduced both span scores, while the 41-parameter
+per-category calibration did not improve test token macro F1. Test results
+were descriptive and were not used for calibration selection.
 
 ### CRF and transformer span behavior
 
@@ -241,7 +251,8 @@ Expert-Annotated NLP Dataset for Legal Contract Review*. NeurIPS.
 The raw data, auditable cleaning, BIO/multi-label conversion, contract splits,
 windowing, dataset analysis, scoring utilities, baselines, prediction audits,
 and transformer/BiLSTM-CRF training code are implemented. All full-data models
-currently have one seed and use one fixed contract split. The CRF reached its
+use one fixed contract split; LegalBERT has two completed seeds and the other
+models have one each. The CRF reached its
 100-iteration cap without convergence. Three categories have fewer than five
 gold test spans. Duplicate screening uses approximate SimHash and cannot rule
 out partial boilerplate overlap. DeBERTa's full run is incomplete; BiLSTM-CRF
@@ -253,8 +264,9 @@ revision or evaluation-window-boundary flag. The fixed leakage-prevention code
 is present in commit `17b18e1`; historical run metadata alone cannot prove
 which source revision produced those outputs. The saved run directories were
 created after that fix commit, which corroborates—but does not replace—the
-missing per-run source revision. A second full LegalBERT seed is in progress
-and is excluded until it completes. Loss curves show validation loss
+missing per-run source revision. LegalBERT seed 43 completed all 8 requested
+epochs within the 80-minute cap and is included as its own result row. Loss
+curves show validation loss
 rising after about epoch 2, while validation F1 often continues to improve
 through later epochs; checkpoint selection uses validation token macro F1.
 

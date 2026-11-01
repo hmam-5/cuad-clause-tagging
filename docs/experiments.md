@@ -73,10 +73,12 @@ macro F1 and raw versus canonical B-tag counts as an overfit diagnostic.
 
 The completed full-data table contains seed-42 results for the CRF,
 `bert-base-cased`, `bert-base-uncased`,
-`nlpaueb/legal-bert-base-uncased`, and `roberta-base`. Each was evaluated on
-the same single contract-level split. LegalBERT seed 43 is currently being
-run; it is not a result until the full run and validation-selected test
-evaluation finish. The CRF reached its 100-iteration cap without convergence.
+`nlpaueb/legal-bert-base-uncased`, and `roberta-base`, plus a second
+LegalBERT run with seed 43. Both LegalBERT results are reported as separate
+seed-specific rows, not combined into a mean or standard deviation. The
+validation-selected weighted-vote ensemble is a separate exploratory record.
+All runs use the same single contract-level split. The CRF reached its
+100-iteration cap without convergence.
 The DeBERTa full run is incomplete and has no test score; BiLSTM-CRF is
 implemented but has not been run as a full experiment. The tracked metrics
 and latest completion state are in `results/metrics.csv`,
@@ -108,13 +110,17 @@ category, missed, or hallucinated; it also reports exact and approximate
 near-duplicate contracts across splits. Its 64-bit SimHash uses at most 512
 uniformly spaced word shingles per contract. It is a screening check, not a
 proof that no boilerplate leakage exists.
-`scripts/summarize_experiments.py` aggregates only full-data runs, reports
-mean/standard deviation across available seeds, writes a one-page findings
-summary, and creates per-category and loss-curve figures. A model with fewer
-than three completed seeds is explicitly exploratory. Completed full
-transformer test and validation records are imported from their run directories
+`scripts/summarize_experiments.py` aggregates only full-data runs, writes
+individual seed rows in its tables and findings summary, and creates
+per-category and loss-curve figures. It does not collapse the available
+LegalBERT seeds into a mean or standard deviation. A model with fewer than
+three completed seeds is explicitly exploratory. Completed full transformer
+test and validation records are imported from their run directories
 under ignored `artifacts/`; their loss histories are copied into tracked
 `results/loss/`. Incomplete transformer runs are not imported.
+The exploratory validation-selected calibration records are in
+`results/exploratory_calibration.json`; test metrics there are descriptive
+only and were not used for selection.
 
 ## Reproducible runs
 
