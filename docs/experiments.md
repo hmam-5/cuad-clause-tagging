@@ -74,8 +74,8 @@ macro F1 and raw versus canonical B-tag counts as an overfit diagnostic.
 The completed full-data table contains seed-42 results for the CRF,
 BiLSTM-CRF,
 `bert-base-cased`, `bert-base-uncased`,
-`nlpaueb/legal-bert-base-uncased`, `roberta-base`, and DeBERTa, plus a second
-LegalBERT run and seed-43 runs for cased and uncased BERT. All seed-specific
+`nlpaueb/legal-bert-base-uncased`, `roberta-base`, and DeBERTa, plus seed-43
+runs for LegalBERT, RoBERTa, and both BERT variants. All seed-specific
 scores are reported as separate rows, not combined into a mean or standard
 deviation. The
 validation-selected weighted-vote ensemble is a separate exploratory record.
@@ -89,7 +89,10 @@ in `results/bilstm-crf-seed42.json`, its loss history in
 `results/loss/bilstm-crf-seed42.csv`, and its audit in
 `results/audit/bilstm_seed42/`. The tracked metrics and latest completion state are in `results/metrics.csv`,
 `results/findings_summary.md`, and the repository README.
-An additional RoBERTa seed-43 run is in progress; no score is available yet.
+The RoBERTa seed-43 run completed seven epochs before patience-based stopping;
+its validation-selected checkpoint and test results are recorded in
+`results/roberta-base-full-seed43.json`, with loss history and predictions
+under `results/loss/` and `results/`. RoBERTa now has two seed-specific runs.
 
 The BiLSTM-CRF used 100-dimensional random embeddings, hidden size 128,
 batch size 16, AdamW at 1e-3, 25% O-only-window retention, and eight requested
@@ -134,6 +137,24 @@ contracts was -0.003849 token macro F1 (95% interval -0.017968–0.013082,
 p=0.589411; 1,000 resamples), providing no evidence of a difference in this
 pair. Both seed comparisons are limited to this one split and should not be
 treated as general estimates of run-to-run variance.
+
+The RoBERTa seed-43 run used the same original 408/51/51 contract split,
+checkpoint, and settings as seed 42. It completed seven of eight requested
+epochs, stopping after validation macro F1 failed to improve for two epochs;
+the best validation token macro F1 was 0.519798 at epoch 5. Training took
+3,445.68 seconds. On the 51-contract test split it scored token macro F1
+0.501063 (95% contract-bootstrap CI 0.454840–0.520356), strict span micro F1
+0.164457, and partial span micro F1 0.339673. Its audit found 3,803 span
+errors: 3,060 hallucinated (80.46%), 427 boundary (11.23%), 197 missed
+(5.18%), and 119 wrong-category (3.13%). The audit and sampled errors are in
+`results/audit/roberta_seed43/`.
+
+Paired bootstrap for RoBERTa seed 42 minus seed 43 on the same 51 test
+contracts was 0.018777 token macro F1 (95% interval 0.003013–0.035743,
+p=0.023976; 1,000 resamples), as recorded in
+`results/paired_comparison_roberta_seed42_seed43.json`. This is one seed pair
+on one split; it is not a robust estimate of run-to-run variance, and the test
+set did not influence checkpoint selection.
 
 The full DeBERTa-v3 seed-42 run completed all 8 configured epochs on the
 408/51/51 contract split. The checkpoint was selected at epoch 8 by validation

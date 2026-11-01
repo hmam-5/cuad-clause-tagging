@@ -11,6 +11,7 @@
 |---|---:|---:|---:|---:|---:|
 | DeBERTa \| microsoft/deberta-v3-base | 42 | 0.5402 (0.4798–0.5646) | 0.2166 | 0.4082 | 140.00 |
 | RoBERTa \| roberta-base | 42 | 0.5202 (0.4651–0.5433) | 0.2018 | 0.3985 | 65.56 |
+|  | 43 | 0.5011 (0.4548–0.5204) | 0.1645 | 0.3397 | 57.43 |
 | BERT \| nlpaueb/legal-bert-base-uncased | 42 | 0.5125 (0.4546–0.5387) | 0.2044 | 0.4079 | 64.53 |
 |  | 43 | 0.5118 (0.4597–0.5359) | 0.2072 | 0.3893 | 64.82 |
 | BERT \| bert-base-cased | 42 | 0.5076 (0.4489–0.5314) | 0.1517 | 0.3306 | 64.46 |
@@ -33,6 +34,7 @@
 - **BERT | nlpaueb/legal-bert-base-uncased** (nlpaueb_legal-bert-base-uncased-full-seed42-validation): token macro F1 0.5387; strict span micro F1 0.2093; partial span micro F1 0.4196.
 - **BERT | nlpaueb/legal-bert-base-uncased** (nlpaueb_legal-bert-base-uncased-full-seed43-validation): token macro F1 0.5631; strict span micro F1 0.2201; partial span micro F1 0.4116.
 - **RoBERTa | roberta-base** (roberta-base-full-seed42-validation): token macro F1 0.5223; strict span micro F1 0.2073; partial span micro F1 0.4036.
+- **RoBERTa | roberta-base** (roberta-base-full-seed43-validation): token macro F1 0.5198; strict span micro F1 0.1755; partial span micro F1 0.3582.
 
 ## Top and bottom five categories
 

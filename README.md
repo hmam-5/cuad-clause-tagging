@@ -74,14 +74,16 @@ exploratory because the validation grid search can overfit.
 | LegalBERT `nlpaueb/legal-bert-base-uncased` | 42 | 0.5387 | 0.5125 | 0.2044 | 0.4079 |
 | LegalBERT `nlpaueb/legal-bert-base-uncased` | 43 | **0.5631** | 0.5118 | 0.2072 | 0.3893 |
 | RoBERTa `roberta-base` | 42 | 0.5223 | 0.5202 | 0.2018 | 0.3985 |
+| RoBERTa `roberta-base` | 43 | 0.5198 | 0.5011 | 0.1645 | 0.3397 |
 | DeBERTa `microsoft/deberta-v3-base` | 42 | 0.5328 | **0.5402** | 0.2166 | 0.4082 |
 | Weighted-vote ensemble (uncased BERT 1, LegalBERT 2, RoBERTa 2) | 42 per model | 0.5528 | 0.5342 | **0.2242** | **0.4423** |
 
 Model rows are from [`results/metrics.csv`](./results/metrics.csv); the
 validation-selected ensemble row is from
 [`results/ensemble_validation_selected.json`](./results/ensemble_validation_selected.json).
-Rows report individual seeds: LegalBERT and both BERT variants have two runs;
-each other completed model has one. DeBERTa has the highest individual test token macro F1, while
+Rows report individual seeds: LegalBERT, both BERT variants, and RoBERTa have
+two runs; DeBERTa and the CRF/BiLSTM-CRF baselines have one each. DeBERTa has
+the highest individual test token macro F1, while
 LegalBERT seed 43 remains the best individual run by validation F1.
 Bootstrap intervals quantify test-contract resampling, not run-to-run training
 variation. The seed-42/43 paired LegalBERT comparison is in
@@ -99,7 +101,11 @@ The uncased BERT seed comparison is in
 [`results/paired_comparison_bert_uncased_seed42_vs_seed43.json`](./results/paired_comparison_bert_uncased_seed42_vs_seed43.json);
 seed 42 minus seed 43 was -0.0038 token macro F1 (paired 95% interval
 -0.0180–0.0131, p=0.589). This pair also does not establish a general estimate
-of run-to-run variance.
+of run-to-run variance. The RoBERTa seed comparison is in
+[`results/paired_comparison_roberta_seed42_seed43.json`](./results/paired_comparison_roberta_seed42_seed43.json);
+seed 42 minus seed 43 was 0.0188 (paired 95% interval 0.0030–0.0357,
+p=0.024). This is one pair on one split and is not a general estimate of
+run-to-run variance.
 Two validation-selected LegalBERT calibration experiments are recorded in
 [`results/exploratory_calibration.json`](./results/exploratory_calibration.json)
 and are excluded from the primary table: the scalar offset slightly raised
@@ -140,7 +146,8 @@ transformers mostly hallucinate spans.
 | BERT cased, seed 43 | 0.1579 | 0.3189 | 254 | 3,105 |
 | BERT uncased, seed 43 | 0.1528 | 0.3194 | 215 | 3,226 |
 | LegalBERT | 0.2044 | 0.4079 | 226 | 2,140 |
-| RoBERTa | 0.2018 | 0.3985 | 233 | 2,222 |
+| RoBERTa, seed 42 | 0.2018 | 0.3985 | 233 | 2,222 |
+| RoBERTa, seed 43 | 0.1645 | 0.3397 | 197 | 3,060 |
 | DeBERTa | 0.2166 | 0.4082 | 202 | 2,162 |
 
 Counts are from the test audits in
@@ -149,7 +156,8 @@ Counts are from the test audits in
 [`results/audit/bert_cased_seed43/`](./results/audit/bert_cased_seed43/),
 [`results/audit/bert_uncased_seed43/`](./results/audit/bert_uncased_seed43/),
 [`results/audit/legalbert_full_data/`](./results/audit/legalbert_full_data/),
-[`results/audit/roberta_full_data/`](./results/audit/roberta_full_data/), and
+[`results/audit/roberta_full_data/`](./results/audit/roberta_full_data/),
+[`results/audit/roberta_seed43/`](./results/audit/roberta_seed43/), and
 [`results/audit/deberta_seed42/`](./results/audit/deberta_seed42/).
 
 ## Quick start
@@ -303,8 +311,9 @@ The raw data, auditable cleaning, BIO/multi-label conversion, contract splits,
 windowing, dataset analysis, scoring utilities, baselines, prediction audits,
 and transformer/BiLSTM-CRF training code are implemented. Most completed
 full-data runs use the original contract split; one LegalBERT seed-42 run
-provides an initial alternate-split measurement. LegalBERT and both BERT
-variants have two completed seeds, and each other model has one. The CRF reached its 100-iteration
+provides an initial alternate-split measurement. LegalBERT, RoBERTa, and both
+BERT variants have two completed seeds; DeBERTa, CRF, and BiLSTM-CRF have one
+each. The CRF reached its 100-iteration
 cap without convergence. Three categories have fewer than five gold test
 spans. Duplicate screening uses approximate SimHash and cannot rule out
 partial boilerplate overlap. DeBERTa completed its eight-epoch seed-42 run;
@@ -318,8 +327,12 @@ strict span micro F1 0.1579, and partial span micro F1 0.3189. Its audit found
 completed with test token macro F1 0.5383, strict span micro F1 0.2257, and
 partial span micro F1 0.4281; this separate result is not pooled with the
 original split. Uncased BERT seed 43 scored 0.4873 test token macro F1; its
-paired difference from seed 42 was not significant. A RoBERTa seed-43 run is
-in progress and has no score yet.
+paired difference from seed 42 was not significant. RoBERTa seed 43 completed
+seven epochs before early stopping; it scored 0.5011 test token macro F1,
+0.1645 strict span micro F1, and 0.3397 partial span micro F1. Its audit found
+3,060 hallucinated and 197 missed spans. The paired seed-42-minus-seed-43
+macro-F1 difference was 0.0188 (95% interval 0.0030–0.0357, p=0.024); this
+single pair does not establish general seed variance.
 Transformer validation loss rises after about epoch 2 while validation F1
 continues to improve;
 checkpoints are selected by validation token macro F1 (validation loss only

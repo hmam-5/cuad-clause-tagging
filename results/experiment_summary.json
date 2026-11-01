@@ -2,7 +2,7 @@
   "dataset_contracts": 510,
   "dataset_spans": 13823,
   "offset_roundtrip_agreement": 1.0,
-  "full_run_count": 12,
+  "full_run_count": 13,
   "model_aggregates": [
     {
       "model": "DeBERTa | microsoft/deberta-v3-base",
@@ -35,7 +35,7 @@
     },
     {
       "model": "RoBERTa | roberta-base",
-      "seeds": 1,
+      "seeds": 2,
       "per_seed_results": [
         {
           "seed": 42,
@@ -46,6 +46,17 @@
           "bootstrap_95": [
             0.465104894311981,
             0.5433059979277484
+          ]
+        },
+        {
+          "seed": 43,
+          "token_macro_f1": 0.5010625500239201,
+          "strict_span_micro_f1": 0.1644572526416907,
+          "partial_span_micro_f1": 0.339673390970221,
+          "training_minutes": 57.427970849999596,
+          "bootstrap_95": [
+            0.4548403675031799,
+            0.5203564678472835
           ]
         }
       ],
@@ -59,6 +70,10 @@
         [
           0.465104894311981,
           0.5433059979277484
+        ],
+        [
+          0.4548403675031799,
+          0.5203564678472835
         ]
       ]
     },
@@ -443,6 +458,19 @@
       "strict_span_macro_f1": 0.16239254119637112,
       "partial_span_micro_f1": 0.40363028421304037,
       "partial_span_macro_f1": 0.3937951965630194
+    },
+    {
+      "run_id": "roberta-base-full-seed43-validation",
+      "model": "RoBERTa | roberta-base",
+      "token_macro_f1": 0.5197977172988023,
+      "bootstrap_95": [
+        0.45405970731798384,
+        0.5452246268359048
+      ],
+      "strict_span_micro_f1": 0.1755020080321285,
+      "strict_span_macro_f1": 0.1438526000089871,
+      "partial_span_micro_f1": 0.3582329317269076,
+      "partial_span_macro_f1": 0.3472272783370939
     }
   ],
   "smoke_run_ids": [
@@ -467,7 +495,8 @@
     "microsoft_deberta-v3-base-full-seed42",
     "nlpaueb_legal-bert-base-uncased-full-seed42",
     "nlpaueb_legal-bert-base-uncased-full-seed43",
-    "roberta-base-full-seed42"
+    "roberta-base-full-seed42",
+    "roberta-base-full-seed43"
   ],
   "paired_comparisons": [
     {
@@ -622,6 +651,20 @@
         "seed": 42.0
       },
       "source_file": "paired_comparison_legalbert_vs_crf.json",
+      "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
+    },
+    {
+      "first": "RoBERTa | roberta-base",
+      "second": "RoBERTa | roberta-base",
+      "paired_difference": {
+        "mean_difference": 0.018777468106849497,
+        "lower": 0.0030125651067201553,
+        "upper": 0.0357434581728438,
+        "two_sided_p": 0.023976023976023976,
+        "iterations": 1000.0,
+        "seed": 42.0
+      },
+      "source_file": "paired_comparison_roberta_seed42_seed43.json",
       "selection_note": "Descriptive paired test comparison only; not used for model selection or tuning."
     },
     {

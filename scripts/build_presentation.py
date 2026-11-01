@@ -230,6 +230,7 @@ def build():
         ("LegalBERT seed 42", "nlpaueb_legal-bert-base-uncased-full-seed42"),
         ("LegalBERT seed 43", "nlpaueb_legal-bert-base-uncased-full-seed43"),
         ("RoBERTa", "roberta-base-full-seed42"),
+        ("RoBERTa", "roberta-base-full-seed43"),
         ("DeBERTa", "microsoft_deberta-v3-base-full-seed42"),
     ]
     rows = [
@@ -393,8 +394,8 @@ def build():
         [
             "Completed: source acquisition, offset-safe preprocessing, split/window generation, analysis, baseline and neural benchmarks, scoring, and audits.",
             "Current coverage: most model runs use the original split; one LegalBERT seed-42 run uses an alternate split.",
-            "LegalBERT and both BERT variants have two seeds; other completed models have one.",
-            "A RoBERTa seed-43 run is in progress; its score is not yet available.",
+            "LegalBERT, RoBERTa, and both BERT variants have two seeds; DeBERTa and the CRF/BiLSTM-CRF baselines have one each.",
+            "RoBERTa seed 43 completed seven epochs; test token macro F1 was 0.5011, with a paired seed difference still limited to one split.",
             "Known limitations: CRF did not converge by 100 iterations; three classes have fewer than five gold test spans; duplicate screening is approximate.",
             "Next: additional model seeds and at least one independently prepared contract split; report individual results, not pooled estimates.",
         ],
